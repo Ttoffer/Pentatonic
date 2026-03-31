@@ -115,16 +115,28 @@
   .guides { z-index: 5; }
   .notes  { z-index: 6; }
 
-  /* Fret wires: dim above top string & below bottom string (strings at 1/7…6/7 of board height). */
+  /* Fret wires: dim above/below strings; inlay frets (same as dot positions) slightly stronger. */
   .frets div.fret-line{
     position:absolute; top:0; bottom:0; width:1px;
+    transform:translateX(-50%);
     background:linear-gradient(to bottom,
-      rgba(42,47,87,0.14) 0%,
-      rgba(42,47,87,0.42) calc(100% / 7 * 0.55),
-      rgba(42,47,87,0.88) calc(100% / 7 * 0.95),
-      rgba(42,47,87,0.88) calc(100% / 7 * 6.05),
-      rgba(42,47,87,0.42) calc(100% / 7 * 6.45),
-      rgba(42,47,87,0.14) 100%
+      rgba(42,47,87,0.11) 0%,
+      rgba(42,47,87,0.32) calc(100% / 7 * 0.55),
+      rgba(42,47,87,0.66) calc(100% / 7 * 0.95),
+      rgba(42,47,87,0.66) calc(100% / 7 * 6.05),
+      rgba(42,47,87,0.32) calc(100% / 7 * 6.45),
+      rgba(42,47,87,0.11) 100%
+    );
+  }
+  .frets div.fret-line.fret-line-inlay{
+    width:2px;
+    background:linear-gradient(to bottom,
+      rgba(42,47,87,0.18) 0%,
+      rgba(42,47,87,0.48) calc(100% / 7 * 0.55),
+      rgba(42,47,87,0.96) calc(100% / 7 * 0.95),
+      rgba(42,47,87,0.96) calc(100% / 7 * 6.05),
+      rgba(42,47,87,0.48) calc(100% / 7 * 6.45),
+      rgba(42,47,87,0.18) 100%
     );
   }
   .frets div.fret-line.nut{width:3px !important; background:#b4b9e8 !important; opacity:.9 !important}
@@ -269,6 +281,8 @@
 
   const CAGED_STARTS = { CAGED_E:0, CAGED_D:2, CAGED_C:4, CAGED_A:7, CAGED_G:9 };
   const WINDOW_WIDTH = 3;
+  /** Fret markers (dots) — same frets get slightly stronger vertical wire lines */
+  const INLAY_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21];
 
   const state = {
     root: 0,
@@ -391,6 +405,7 @@
       const line = document.createElement('div');
       line.style.left = `${xFret(f)}px`;
       line.className = 'fret-line';
+      if (f > 0 && INLAY_FRETS.includes(f)) line.classList.add('fret-line-inlay');
       fretsLayer.appendChild(line);
       if(f===0) line.classList.add('nut');
       else {
@@ -417,8 +432,7 @@
       labelsLayer.appendChild(lbl);
     }
 
-    const marks=[3,5,7,9,12,15,17,19,21];
-    marks.forEach(f=>{
+    INLAY_FRETS.forEach(f=>{
       const x = xFret(f);
       if(f===12){
         [height/3, 2*height/3].forEach(my=>{
