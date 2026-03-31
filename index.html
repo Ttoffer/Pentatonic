@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0f1220" />
+<meta name="apple-mobile-web-app-title" content="Pentatonic" />
+<link rel="manifest" href="manifest.webmanifest" />
+<title>Pentatonic Scales</title>
+<style>
+  :root{
+    --bg:#0f1220;
+    --panel:#151935;
+    --panel-2:#1c2147;
+    --text:#e6e8f2;
+    --muted:#9aa3c7;
+    --accent:#6ea8fe;
+    --grid:#2a2f57;
+
+    /* Degree colors */
+    --root:#ffd166;   /* 1 */
+    --deg1:#64e4ff;   /* 2 or b3 */
+    --deg2:#8aff85;   /* 3 or 4  */
+    --deg3:#b38bff;   /* 5       */
+    --deg4:#ff9494;   /* 6 or b7 */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:radial-gradient(1200px 1200px at 70% -300px,#1b1f40 0%,#0f1220 60%);color:var(--text);font:500 16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial;-webkit-tap-highlight-color:transparent}
+  body{
+    padding-top:max(12px, env(safe-area-inset-top));
+    padding-right:env(safe-area-inset-right);
+    padding-bottom:max(12px, env(safe-area-inset-bottom));
+    padding-left:env(safe-area-inset-left);
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:16px}
+  header{
+    display:flex; gap:16px; align-items:center; justify-content:space-between;
+    background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid #2a2f57; border-radius:16px; padding:14px 16px; box-shadow:0 10px 30px rgba(0,0,0,.25)
+  }
+  .title{display:flex;gap:12px;align-items:center}
+  .title h1{font-size:18px;margin:0;letter-spacing:.3px}
+  .seg{display:inline-flex; background:#0d1024; border:1px solid #2a2f57; border-radius:12px; padding:3px; gap:4px}
+  .seg button{
+    appearance:none; border:none; background:transparent; color:var(--muted);
+    padding:8px 12px; border-radius:9px; cursor:pointer; font-weight:600; letter-spacing:.2px
+  }
+  .seg button.active{background:var(--accent); color:#0d1024}
+  .controls{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .controls label{
+    background:#0d1024; border:1px solid #2a2f57; border-radius:10px; padding:8px 12px; display:inline-flex; gap:10px; align-items:center
+  }
+  .pill{
+    background:#0d1024; border:1px solid #2a2f57; border-radius:999px; padding:6px 12px; color:var(--muted)
+  }
+  select{
+    background:#0d1024; color:var(--text); border:1px solid #2a2f57; border-radius:10px; padding:8px 10px
+  }
+  .grid{display:grid; grid-template-columns: 420px 1fr; gap:16px; margin-top:16px}
+  @media (max-width:1000px){ .grid{grid-template-columns:1fr} }
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid #2a2f57; border-radius:16px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.25)
+  }
+  .card h2{font-size:14px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin:0 0 8px}
+
+  /* Circle */
+  .circle-wrap{display:flex; justify-content:center; align-items:center; padding:8px}
+  #circle{overflow:visible; touch-action:manipulation;} /* remove 300ms delay on iOS/Edge */
+  /* Do not use transform:scale on .node — it overrides SVG transform="translate(...)" and makes labels jump. */
+  .node{cursor:pointer; user-select:none;-webkit-user-select:none}
+  @media (hover:hover) and (pointer:fine){
+    .node:hover circle.visual{ filter: brightness(1.12); stroke: #8eb8ff; stroke-width: 2.2px; }
+  }
+  /* Make the big background ring non-interactive */
+  .circle-bg{pointer-events:none}
+  /* Visual elements inside nodes should not steal events; the hit ring will */
+  .node circle.visual, .node text{pointer-events:none}
+  .node circle.visual{
+    fill:#0d1024; stroke:#2a2f57; stroke-width:1.5;
+    transition: stroke .15s ease, stroke-width .15s ease, filter .15s ease, fill .15s ease;
+  }
+  .node text{font-weight:700; font-size:13px; dominant-baseline:middle; text-anchor:middle; fill:var(--text)}
+  .node.root circle.visual{fill:var(--root)}
+  .node.root text{fill:#111}
+  .node.in-scale:not(.root) circle.visual{fill:#6df0c2}
+  .node.in-scale:not(.root) text{fill:#0b1020}
+
+  .legend{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; color:var(--muted); font-size:12px}
+  .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #2a2f57;background:#0d1024;color:var(--muted);padding:6px 10px;border-radius:999px;font-size:12px}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .dot.root{background:var(--root)}
+  .dot.d1{background:var(--deg1)}
+  .dot.d2{background:var(--deg2)}
+  .dot.d3{background:var(--deg3)}
+  .dot.d4{background:var(--deg4)}
+
+  /* Fretboard */
+  .fretboard{position:relative; overflow:auto; padding:8px;-webkit-overflow-scrolling:touch}
+  .board{
+    position:relative; background:#0b0e20; border-radius:12px; padding:14px;
+    box-shadow: inset 0 0 0 1px #2a2f57, inset 0 0 32px rgba(0,0,0,.35);
+  }
+  .fb{position:relative; width:max(1020px,100%); height:420px}
+  .strings, .frets, .markers, .labels, .guides, .notes{position:absolute; inset:0}
+
+  /* layering order so guides sit under notes */
+  .frets  { z-index: 1; }
+  .strings{ z-index: 2; }
+  .markers{ z-index: 3; }
+  .labels { z-index: 4; }
+  .guides { z-index: 5; }
+  .notes  { z-index: 6; }
+
+  .frets div{position:absolute; top:0; bottom:0; width:1px; background:var(--grid); opacity:.9}
+  .nut{width:3px !important; background:#b4b9e8 !important; opacity:.9}
+  .fret-num{position:absolute; top:-10px; transform:translateX(-50%); font-size:11px; color:var(--muted)}
+  .string{position:absolute; left:36px; right:0; height:2px; background:linear-gradient(90deg,#a1a6d9 0,#6169aa 100%); transform:translateY(-1px)}
+  .marker-dot{position:absolute; width:10px; height:10px; border-radius:50%; background:#bcd3ff; opacity:.85; transform:translate(-50%,-50%)}
+
+  .slabel{
+    position:absolute; left:6px; transform:translateY(-50%);
+    font-size:13px; font-weight:800; color:#d7dcff; opacity:.9;
+    background:rgba(0,0,0,.25); padding:2px 6px; border-radius:6px; border:1px solid #2a2f57;
+    width:26px; text-align:center;
+  }
+
+  /* Root guide lines — stronger & brighter */
+  .guide-v{
+    position:absolute; top:0; bottom:0; width:3px;
+    transform:translateX(-1.5px);
+    background:linear-gradient(
+      180deg,
+      rgba(255,209,102,.22),
+      rgba(255,209,102,.42),
+      rgba(255,209,102,.22)
+    );
+    box-shadow:
+      0 0 0 1px rgba(255,209,102,.25) inset,
+      0 0 14px rgba(255,209,102,.22);
+    mix-blend-mode: screen;
+    opacity:.95;
+    pointer-events:none;
+  }
+
+  .fb-note{
+    position:absolute; transform:translate(-50%,-50%); min-width:34px; height:28px; padding:0 8px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:999px; border:2px solid transparent;
+    color:#0b1020; font-weight:800; font-size:12px; white-space:nowrap;
+    box-shadow:0 4px 10px rgba(0,0,0,.35)
+  }
+  .fb-note.root{ background:var(--root); color:#111; border-color:#c9a542 }
+  .fb-note.deg-1{ background:var(--deg1) }
+  .fb-note.deg-2{ background:var(--deg2) }
+  .fb-note.deg-3{ background:var(--deg3) }
+  .fb-note.deg-4{ background:var(--deg4) }
+  .fb-note .sub{font-weight:700; opacity:.85; font-size:11px; margin-left:6px}
+
+  .dim{opacity:.22; filter:saturate(.5)}
+  .pattern{box-shadow:0 0 0 3px rgba(255,255,255,.2), 0 0 18px rgba(255,255,255,.18)}
+  .pattern.root{box-shadow:0 0 0 3px rgba(255,209,102,.25), 0 0 24px rgba(255,209,102,.25)}
+  .root-hint{
+    background:var(--root); color:#111; opacity:.55; border-color:#c9a542;
+    box-shadow:0 0 0 2px rgba(255,209,102,.15), 0 0 12px rgba(255,209,102,.12);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2v20M4 7h16M4 12h16M4 17h16" stroke="#6ea8fe" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h1>Pentatonic Circle + Guitar Fretboard</h1>
+      </div>
+      <div class="controls">
+        <div class="seg" role="tablist" aria-label="Scale type">
+          <button id="btnMajor" class="active" aria-pressed="true">Major Pentatonic</button>
+          <button id="btnMinor" aria-pressed="false">Minor Pentatonic</button>
+        </div>
+        <label><input type="checkbox" id="chkPattern" checked /> Pattern overlay</label>
+        <label><input type="checkbox" id="chkPatternOnly" /> Show only pattern notes (keeps root hints + guide lines)</label>
+        <label>Preset:
+          <select id="presetSelect">
+            <option value="E_ROOT">Low E root (your E-string pattern)</option>
+            <option value="A_ROOT">A string root (mirrored)</option>
+            <option value="CAGED_E">CAGED window: E-shape</option>
+            <option value="CAGED_D">CAGED window: D-shape</option>
+            <option value="CAGED_C">CAGED window: C-shape</option>
+            <option value="CAGED_A">CAGED window: A-shape</option>
+            <option value="CAGED_G">CAGED window: G-shape</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="chkDegrees" /> Show degree labels</label>
+        <label><input type="checkbox" id="chkFlip" /> Flip strings (high E on top)</label>
+        <div class="pill" id="currentKey">Key: C • Major Pentatonic</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Circle (click a key)</h2>
+        <div class="circle-wrap">
+          <svg id="circle" width="380" height="380" viewBox="0 0 380 380" role="group" aria-label="Pentatonic key circle"></svg>
+        </div>
+        <div class="legend" id="degLegend"></div>
+      </section>
+
+      <section class="card">
+        <h2>Fretboard (Strings labelled at the nut)</h2>
+        <div class="fretboard">
+          <div class="board">
+            <div class="fb" id="fb">
+              <div class="frets" id="frets"></div>
+              <div class="strings" id="strings"></div>
+              <div class="markers" id="markers"></div>
+              <div class="labels" id="labels"></div>
+              <div class="guides" id="guides"></div>
+              <div class="notes" id="notes"></div>
+            </div>
+          </div>
+        </div>
+        <div class="legend">
+          Presets: **Low E root** (original) • **A string root** (mirrored) • **CAGED windows**.  
+          Pattern overlay: strong focus notes; off-pattern roots remain as soft hints; vertical guide lines at all root frets.
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const FIFTHS_ORDER = [0,7,2,9,4,11,6,1,8,3,10,5];
+  const TUNING = [4, 9, 2, 7, 11, 4]; // E A D G B E
+
+  const SCALE_OFFSETS = {
+    majorPent: [0,2,4,7,9],
+    minorPent: [0,3,5,7,10],
+  };
+  const DEGREE_LABELS = {
+    majorPent: ["1","2","3","5","6"],
+    minorPent: ["1","b3","4","5","b7"]
+  };
+  const DEGREE_CLASS = ["root","deg-1","deg-2","deg-3","deg-4"];
+
+  const PRESET = { E_ROOT:'E_ROOT', A_ROOT:'A_ROOT', CAGED_E:'CAGED_E', CAGED_D:'CAGED_D', CAGED_C:'CAGED_C', CAGED_A:'CAGED_A', CAGED_G:'CAGED_G' };
+
+  const PATTERN_MAJOR_E = { 0:[0,2,4], 1:[2,4], 2:[], 3:[], 4:[], 5:[] };
+  const PATTERN_MINOR_E = { 0:[0],     1:[-2,0,2], 2:[0], 3:[], 4:[], 5:[] };
+  const PATTERN_MAJOR_A = { 0:[], 1:[0,2,4], 2:[2,4], 3:[], 4:[], 5:[] };
+  const PATTERN_MINOR_A = { 0:[], 1:[0],     2:[-2,0,2], 3:[0], 4:[], 5:[] };
+
+  const CAGED_STARTS = { CAGED_E:0, CAGED_D:2, CAGED_C:4, CAGED_A:7, CAGED_G:9 };
+  const WINDOW_WIDTH = 3;
+
+  const state = {
+    root: 0,
+    mode: "majorPent",
+    showDegrees: false,
+    highEOnTop: false,
+    patternOn: true,
+    patternOnly: false,
+    preset: PRESET.E_ROOT,
+    frets: 22
+  };
+
+  const mod = (n,m)=>((n%m)+m)%m;
+  const toNote = i => NOTE_NAMES[mod(i,12)];
+  const intervalSet = (root, offs) => new Set(offs.map(o => mod(root+o,12)));
+  const relMinor = root => mod(root-3,12);
+
+  function preferredFretOnString(rootIdx, stringIdx){
+    const open = TUNING[stringIdx];
+    const hits = [];
+    for(let f=0; f<=21; f++) if(mod(open+f,12)===rootIdx) hits.push(f);
+    const mid = hits.find(f=>f>=3 && f<=12);
+    return mid ?? (hits.sort((a,b)=>Math.abs(a-7)-Math.abs(b-7))[0] ?? 0);
+  }
+
+  const circleSVG = document.getElementById('circle');
+
+  // Circle nodes: use pointerdown only when supported — adding click as well runs activate
+  // twice on desktop (pointerdown + synthetic click) and causes fretboard flicker.
+  function buildCircle(){
+    circleSVG.innerHTML = '';
+    const cx=190, cy=190, r=150;
+
+    // non-interactive outer ring
+    const ring = svg('circle',{cx,cy,r,fill:'none',stroke:'#2a2f57','stroke-width':12});
+    ring.classList.add('circle-bg');
+    circleSVG.appendChild(ring);
+
+    FIFTHS_ORDER.forEach((noteIdx, i) => {
+      const angle = (-90 + i*30) * Math.PI/180;
+      const x = cx + Math.cos(angle)*(r-22);
+      const y = cy + Math.sin(angle)*(r-22);
+
+      const g = svg('g',{class:'node',transform:`translate(${x},${y})`,'data-note':noteIdx, role:'button', tabindex:'0', 'aria-label':`Select ${toNote(noteIdx)}`});
+
+      // large invisible hit ring (captures touch/click reliably)
+      const hit = svg('circle',{r:28, fill:'rgba(0,0,0,0)', 'pointer-events':'all'});
+      g.appendChild(hit);
+
+      // visual face
+      const face = svg('circle',{r:22}); face.classList.add('visual');
+      g.appendChild(face);
+
+      const t = svg('text',{}); t.textContent = toNote(noteIdx); g.appendChild(t);
+
+      const selectThisNote = () => {
+        if (state.root === noteIdx) return;
+        state.root = noteIdx;
+        renderAll();
+      };
+      const onPointerDown = (ev) => {
+        if (ev.button !== 0) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        selectThisNote();
+      };
+      if (window.PointerEvent) {
+        g.addEventListener('pointerdown', onPointerDown, { passive: false });
+      } else {
+        g.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          selectThisNote();
+        });
+      }
+      g.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        selectThisNote();
+      });
+
+      circleSVG.appendChild(g);
+    });
+    updateCircleHighlight();
+  }
+
+  function updateCircleHighlight(){
+    const scale = intervalSet(state.root, SCALE_OFFSETS[state.mode]);
+    circleSVG.querySelectorAll('.node').forEach(node=>{
+      const idx = +node.getAttribute('data-note');
+      node.classList.toggle('root', idx===state.root);
+      node.classList.toggle('in-scale', scale.has(idx));
+      node.setAttribute('aria-pressed', idx===state.root ? 'true' : 'false');
+    });
+  }
+
+  const fb = document.getElementById('fb');
+  const fretsLayer   = document.getElementById('frets');
+  const stringsLayer = document.getElementById('strings');
+  const markersLayer = document.getElementById('markers');
+  const labelsLayer  = document.getElementById('labels');
+  const guidesLayer  = document.getElementById('guides');
+  const notesLayer   = document.getElementById('notes');
+
+  function layoutBoard(){
+    fretsLayer.innerHTML = '';
+    stringsLayer.innerHTML = '';
+    markersLayer.innerHTML = '';
+    labelsLayer.innerHTML  = '';
+    guidesLayer.innerHTML  = '';
+
+    const width = fb.clientWidth;
+    const height = fb.clientHeight;
+    const fretCount = state.frets;
+
+    const xFret = f => 36 + (f / (fretCount-1)) * (width - 56);
+    const yRow  = r => (r+1) * (height/7);
+
+    for(let f=0; f<fretCount; f++){
+      const line = document.createElement('div');
+      line.style.left = `${xFret(f)}px`;
+      line.className = 'fret-line';
+      fretsLayer.appendChild(line);
+      if(f===0) line.classList.add('nut');
+      else {
+        const num = document.createElement('div');
+        num.className = 'fret-num';
+        num.style.left = `${xFret(f)}px`;
+        num.textContent = f;
+        fretsLayer.appendChild(num);
+      }
+    }
+    fretsLayer.classList.add('frets');
+
+    for(let r=0;r<6;r++){
+      const st = document.createElement('div');
+      st.className = 'string';
+      st.style.top = `${yRow(r)}px`;
+      stringsLayer.appendChild(st);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'slabel';
+      lbl.style.top = `${yRow(r)}px`;
+      const sIdx = visualRowToStringIndex(r);
+      lbl.textContent = toNote(TUNING[sIdx]); // E A D G B E
+      labelsLayer.appendChild(lbl);
+    }
+
+    const marks=[3,5,7,9,12,15,17,19,21];
+    marks.forEach(f=>{
+      const x = xFret(f);
+      if(f===12){
+        [height/3, 2*height/3].forEach(my=>{
+          const md = document.createElement('div');
+          md.className = 'marker-dot';
+          md.style.left = `${x}px`; md.style.top  = `${my}px`;
+          markersLayer.appendChild(md);
+        });
+      }else{
+        const md = document.createElement('div');
+        md.className = 'marker-dot';
+        md.style.left = `${x}px`; md.style.top  = `${height/2}px`;
+        markersLayer.appendChild(md);
+      }
+    });
+
+    fb._xFret = xFret;
+    fb._yRow  = yRow;
+  }
+
+  function visualRowToStringIndex(row){
+    return state.highEOnTop ? (5 - row) : row;
+  }
+
+  function renderLegend(){
+    const container = document.getElementById('degLegend');
+    container.innerHTML = '';
+    const labels = DEGREE_LABELS[state.mode];
+    const items = [
+      {cls:'root', txt:labels[0]},
+      {cls:'d1', txt:labels[1]},
+      {cls:'d2', txt:labels[2]},
+      {cls:'d3', txt:labels[3]},
+      {cls:'d4', txt:labels[4]},
+    ];
+    items.forEach(it=>{
+      const span = document.createElement('span');
+      span.className = 'badge';
+      span.innerHTML = `<span class="dot ${it.cls}"></span>${it.txt}`;
+      container.appendChild(span);
+    });
+  }
+
+  function renderGuides(){
+    guidesLayer.innerHTML = '';
+    if(!state.patternOn) return;
+    const x = fb._xFret;
+    const rootsAtFret = new Set();
+    for(let s=0; s<6; s++){
+      const open = TUNING[s];
+      for(let f=0; f<state.frets; f++){
+        if(mod(open+f,12) === state.root) rootsAtFret.add(f);
+      }
+    }
+    rootsAtFret.forEach(f=>{
+      const line = document.createElement('div');
+      line.className = 'guide-v';
+      line.style.left = `${x(f)}px`;
+      guidesLayer.appendChild(line);
+    });
+  }
+
+  function renderAll(){
+    const modeLabel = state.mode === 'majorPent' ? 'Major Pentatonic' : 'Minor Pentatonic';
+    document.getElementById('currentKey').textContent =
+      `Key: ${toNote(state.root)} • ${modeLabel}` + (state.highEOnTop ? ' • (TAB orientation)' : ' • (Low E on top)');
+    updateCircleHighlight();
+    renderLegend();
+    renderGuides();
+    renderNotes();
+  }
+
+  function renderNotes(){
+    notesLayer.innerHTML = '';
+    const x = fb._xFret, y = fb._yRow;
+    if(!x || !y) return;
+
+    const offs = SCALE_OFFSETS[state.mode];
+    const labels = DEGREE_LABELS[state.mode];
+    const scale = intervalSet(state.root, offs);
+
+    const minorRoot = (state.mode === 'majorPent') ? relMinor(state.root) : state.root;
+    const baseMinorE = preferredFretOnString(minorRoot, 0);
+    const windowStartOffset = CAGED_STARTS[state.preset] ?? null;
+    const windowStart = (windowStartOffset!=null) ? (baseMinorE + windowStartOffset) : null;
+    const windowEnd = (windowStart!=null) ? (windowStart + WINDOW_WIDTH) : null;
+
+    const RE = preferredFretOnString(state.root, 0);
+    const RA = preferredFretOnString(state.root, 1);
+
+    const patternFretsByString = {};
+    let useDiscrete = false;
+    if(state.preset === PRESET.E_ROOT){
+      const def = (state.mode === 'majorPent') ? PATTERN_MAJOR_E : PATTERN_MINOR_E;
+      useDiscrete = true;
+      for(let s=0;s<6;s++) patternFretsByString[s] = (def[s]||[]).map(off=>RE+off);
+    }else if(state.preset === PRESET.A_ROOT){
+      const def = (state.mode === 'majorPent') ? PATTERN_MAJOR_A : PATTERN_MINOR_A;
+      useDiscrete = true;
+      for(let s=0;s<6;s++) patternFretsByString[s] = (def[s]||[]).map(off=>RA+off);
+    }
+
+    for(let r=0;r<6;r++){
+      const sIdx = visualRowToStringIndex(r);
+      const open = TUNING[sIdx];
+
+      for(let f=0; f<state.frets; f++){
+        const idx = mod(open+f,12);
+        if(!scale.has(idx)) continue;
+
+        const rel = mod(idx - state.root, 12);
+        const di = offs.indexOf(rel);
+        const cls = DEGREE_CLASS[di];
+        const isRoot = (cls === 'root');
+
+        let inPattern = false;
+        if(state.patternOn){
+          if(useDiscrete){
+            inPattern = (patternFretsByString[sIdx]||[]).includes(f);
+          }else if(windowStart!=null){
+            inPattern = (f>=windowStart && f<=windowEnd);
+          }
+        }
+
+        if(state.patternOn && state.patternOnly && !inPattern && !isRoot) continue;
+
+        const div = document.createElement('div');
+        div.className = `fb-note ${cls}`;
+        if(state.patternOn){
+          if(inPattern){
+            div.classList.add('pattern');
+          }else if(isRoot){
+            div.classList.add('root-hint');
+          }else if(!state.patternOnly){
+            div.classList.add('dim');
+          }
+        }
+
+        div.style.left = `${x(f)}px`;
+        div.style.top  = `${y(r)}px`;
+
+        const noteName = toNote(idx);
+        if(state.showDegrees){
+          const degTxt = labels[di];
+          div.innerHTML = `<span>${noteName}</span><span class="sub">${degTxt}</span>`;
+          div.title = `${noteName} — degree ${degTxt}`;
+        }else{
+          div.textContent = noteName;
+          div.title = noteName;
+        }
+        notesLayer.appendChild(div);
+      }
+    }
+  }
+
+  function svg(tag, attrs){ const n=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const k in attrs){ n.setAttribute(k, attrs[k]); } return n; }
+
+  // Controls
+  document.getElementById('btnMajor').addEventListener('click', ()=>{
+    state.mode = 'majorPent';
+    document.getElementById('btnMajor').classList.add('active');
+    document.getElementById('btnMajor').setAttribute('aria-pressed','true');
+    document.getElementById('btnMinor').classList.remove('active');
+    document.getElementById('btnMinor').setAttribute('aria-pressed','false');
+    renderAll();
+  });
+  document.getElementById('btnMinor').addEventListener('click', ()=>{
+    state.mode = 'minorPent';
+    document.getElementById('btnMinor').classList.add('active');
+    document.getElementById('btnMinor').setAttribute('aria-pressed','true');
+    document.getElementById('btnMajor').classList.remove('active');
+    document.getElementById('btnMajor').setAttribute('aria-pressed','false');
+    renderAll();
+  });
+
+  document.getElementById('chkPattern').addEventListener('change', e=>{
+    state.patternOn = e.target.checked; renderAll();
+  });
+  document.getElementById('chkPatternOnly').addEventListener('change', e=>{
+    state.patternOnly = e.target.checked; renderAll();
+  });
+  document.getElementById('chkDegrees').addEventListener('change', e=>{
+    state.showDegrees = e.target.checked; renderAll();
+  });
+  document.getElementById('chkFlip').addEventListener('change', e=>{
+    state.highEOnTop = e.target.checked; layoutBoard(); renderAll();
+  });
+  document.getElementById('presetSelect').addEventListener('change', e=>{
+    state.preset = e.target.value; renderAll();
+  });
+
+  function init(){
+    buildCircle();
+    layoutBoard();
+    renderAll();
+  }
+  if(document.readyState === 'complete' || document.readyState === 'interactive'){
+    requestAnimationFrame(init);
+  }else{
+    window.addEventListener('DOMContentLoaded', ()=>requestAnimationFrame(init));
+  }
+  window.addEventListener('resize', ()=>{
+    clearTimeout(window._fbRelayout);
+    window._fbRelayout = setTimeout(()=>{ layoutBoard(); renderAll(); }, 80);
+  });
+})();
+</script>
+</body>
+</html>
