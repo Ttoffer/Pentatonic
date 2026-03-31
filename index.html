@@ -197,7 +197,7 @@
           </select>
         </label>
         <label><input type="checkbox" id="chkDegrees" /> Show degree labels</label>
-        <label><input type="checkbox" id="chkFlip" /> Flip strings (high E on top)</label>
+        <label><input type="checkbox" id="chkFlip" checked /> Low E at bottom (E A D G B E, like TAB)</label>
         <div class="pill" id="currentKey">Key: C • Major Pentatonic</div>
       </div>
     </header>
@@ -263,7 +263,7 @@
     root: 0,
     mode: "majorPent",
     showDegrees: false,
-    highEOnTop: false,
+    highEOnTop: true,
     patternOn: true,
     patternOnly: false,
     preset: PRESET.E_ROOT,
@@ -473,7 +473,7 @@
   function renderAll(){
     const modeLabel = state.mode === 'majorPent' ? 'Major Pentatonic' : 'Minor Pentatonic';
     document.getElementById('currentKey').textContent =
-      `Key: ${toNote(state.root)} • ${modeLabel}` + (state.highEOnTop ? ' • (TAB orientation)' : ' • (Low E on top)');
+      `Key: ${toNote(state.root)} • ${modeLabel}` + (state.highEOnTop ? ' • (low E at bottom)' : ' • (low E at top)');
     updateCircleHighlight();
     renderLegend();
     renderGuides();
