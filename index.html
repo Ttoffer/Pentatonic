@@ -104,8 +104,7 @@
     position:relative; background:#0b0e20; border-radius:12px; padding:14px;
     box-shadow: inset 0 0 0 1px #2a2f57, inset 0 0 32px rgba(0,0,0,.35);
   }
-  /* Min width ~800px: in a typical side-by-side layout ~17 frets fit in view (was ~14 at 1020px). */
-  .fb{position:relative; width:max(800px,100%); height:420px}
+  .fb{position:relative; width:max(1020px,100%); height:420px}
   .strings, .frets, .markers, .labels, .guides, .notes{position:absolute; inset:0}
 
   /* layering order so guides sit under notes */
@@ -116,8 +115,19 @@
   .guides { z-index: 5; }
   .notes  { z-index: 6; }
 
-  .frets div{position:absolute; top:0; bottom:0; width:1px; background:var(--grid); opacity:.9}
-  .nut{width:3px !important; background:#b4b9e8 !important; opacity:.9}
+  /* Fret wires: dim above top string & below bottom string (strings at 1/7…6/7 of board height). */
+  .frets div.fret-line{
+    position:absolute; top:0; bottom:0; width:1px;
+    background:linear-gradient(to bottom,
+      rgba(42,47,87,0.14) 0%,
+      rgba(42,47,87,0.42) calc(100% / 7 * 0.55),
+      rgba(42,47,87,0.88) calc(100% / 7 * 0.95),
+      rgba(42,47,87,0.88) calc(100% / 7 * 6.05),
+      rgba(42,47,87,0.42) calc(100% / 7 * 6.45),
+      rgba(42,47,87,0.14) 100%
+    );
+  }
+  .frets div.fret-line.nut{width:3px !important; background:#b4b9e8 !important; opacity:.9 !important}
   .fret-num{position:absolute; top:-10px; transform:translateX(-50%); font-size:11px; color:var(--muted)}
   .string{position:absolute; left:36px; right:0; height:2px; background:linear-gradient(90deg,#a1a6d9 0,#6169aa 100%); transform:translateY(-1px)}
   .marker-dot{position:absolute; width:10px; height:10px; border-radius:50%; background:#bcd3ff; opacity:.85; transform:translate(-50%,-50%)}
