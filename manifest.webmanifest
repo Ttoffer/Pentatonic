@@ -2,6 +2,14 @@
   "name": "Pentatonic Scales",
   "short_name": "Pentatonic",
   "description": "Pentatonic circle and guitar fretboard patterns",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
