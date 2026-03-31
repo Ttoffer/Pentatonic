@@ -128,8 +128,10 @@
       rgba(42,47,87,0.11) 100%
     );
   }
-  .frets div.fret-line.fret-line-inlay{
-    width:2px;
+  /* Inlay accent: center of fret *space* (between wires f-1 and f), same x as position markers */
+  .frets div.fret-inlay-accent{
+    position:absolute; top:0; bottom:0; width:2px; pointer-events:none;
+    transform:translateX(-50%);
     background:linear-gradient(to bottom,
       rgba(42,47,87,0.18) 0%,
       rgba(42,47,87,0.48) calc(100% / 7 * 0.55),
@@ -475,13 +477,14 @@
     const fretCount = state.frets;
 
     const xFret = f => 36 + (f / (fretCount-1)) * (width - 56);
+    /** Center of playable slot for fret f (between wire f-1 and wire f) — matches dot inlays */
+    const midSlotX = f => (xFret(f - 1) + xFret(f)) / 2;
     const yRow  = r => (r+1) * (height/7);
 
     for(let f=0; f<fretCount; f++){
       const line = document.createElement('div');
       line.style.left = `${xFret(f)}px`;
       line.className = 'fret-line';
-      if (f > 0 && INLAY_FRETS.includes(f)) line.classList.add('fret-line-inlay');
       fretsLayer.appendChild(line);
       if(f===0) line.classList.add('nut');
       else {
@@ -509,7 +512,11 @@
     }
 
     INLAY_FRETS.forEach(f=>{
-      const x = xFret(f);
+      const x = midSlotX(f);
+      const accent = document.createElement('div');
+      accent.className = 'fret-inlay-accent';
+      accent.style.left = `${x}px`;
+      fretsLayer.appendChild(accent);
       if(f===12){
         [height/3, 2*height/3].forEach(my=>{
           const md = document.createElement('div');
