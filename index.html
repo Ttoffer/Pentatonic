@@ -115,7 +115,7 @@
   .guides { z-index: 5; }
   .notes  { z-index: 6; }
 
-  /* Fret wires: dim above/below strings; inlay frets (same as dot positions) slightly stronger. */
+  /* Fret wires at each fret position; emphasised frets (typical board pattern) slightly stronger */
   .frets div.fret-line{
     position:absolute; top:0; bottom:0; width:1px;
     transform:translateX(-50%);
@@ -128,10 +128,8 @@
       rgba(42,47,87,0.11) 100%
     );
   }
-  /* Inlay accent: center of fret *space* (between wires f-1 and f), same x as position markers */
-  .frets div.fret-inlay-accent{
-    position:absolute; top:0; bottom:0; width:2px; pointer-events:none;
-    transform:translateX(-50%);
+  .frets div.fret-line.fret-line-inlay{
+    width:2px;
     background:linear-gradient(to bottom,
       rgba(42,47,87,0.18) 0%,
       rgba(42,47,87,0.48) calc(100% / 7 * 0.55),
@@ -359,8 +357,10 @@
 
   const CAGED_STARTS = { CAGED_E:0, CAGED_D:2, CAGED_C:4, CAGED_A:7, CAGED_G:9 };
   const WINDOW_WIDTH = 3;
-  /** Fret markers (dots) — same frets get slightly stronger vertical wire lines */
-  const INLAY_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21];
+  /** Fret-wire reference marks (slightly stronger verticals) */
+  const INLAY_FRETS = [1, 3, 5, 7, 9, 12, 15, 17, 19, 21];
+  /** Position dots — centre of fret space (typical guitar: 3,5,7,9,12,15,17,19,21; 12 = double) */
+  const MARKER_DOT_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21];
 
   const state = {
     root: 0,
@@ -477,7 +477,6 @@
     const fretCount = state.frets;
 
     const xFret = f => 36 + (f / (fretCount-1)) * (width - 56);
-    /** Center of playable slot for fret f (between wire f-1 and wire f) — matches dot inlays */
     const midSlotX = f => (xFret(f - 1) + xFret(f)) / 2;
     const yRow  = r => (r+1) * (height/7);
 
@@ -485,6 +484,7 @@
       const line = document.createElement('div');
       line.style.left = `${xFret(f)}px`;
       line.className = 'fret-line';
+      if (f > 0 && INLAY_FRETS.includes(f)) line.classList.add('fret-line-inlay');
       fretsLayer.appendChild(line);
       if(f===0) line.classList.add('nut');
       else {
@@ -511,23 +511,19 @@
       labelsLayer.appendChild(lbl);
     }
 
-    INLAY_FRETS.forEach(f=>{
+    MARKER_DOT_FRETS.forEach(f=>{
       const x = midSlotX(f);
-      const accent = document.createElement('div');
-      accent.className = 'fret-inlay-accent';
-      accent.style.left = `${x}px`;
-      fretsLayer.appendChild(accent);
       if(f===12){
         [height/3, 2*height/3].forEach(my=>{
           const md = document.createElement('div');
           md.className = 'marker-dot';
-          md.style.left = `${x}px`; md.style.top  = `${my}px`;
+          md.style.left = `${x}px`; md.style.top = `${my}px`;
           markersLayer.appendChild(md);
         });
       }else{
         const md = document.createElement('div');
         md.className = 'marker-dot';
-        md.style.left = `${x}px`; md.style.top  = `${height/2}px`;
+        md.style.left = `${x}px`; md.style.top = `${height/2}px`;
         markersLayer.appendChild(md);
       }
     });
