@@ -120,29 +120,29 @@
     position:absolute; top:0; bottom:0; width:1px;
     transform:translateX(-50%);
     background:linear-gradient(to bottom,
-      rgba(42,47,87,0.11) 0%,
-      rgba(42,47,87,0.32) calc(100% / 7 * 0.55),
-      rgba(42,47,87,0.66) calc(100% / 7 * 0.95),
-      rgba(42,47,87,0.66) calc(100% / 7 * 6.05),
-      rgba(42,47,87,0.32) calc(100% / 7 * 6.45),
-      rgba(42,47,87,0.11) 100%
+      rgba(72,82,140,0.26) 0%,
+      rgba(72,82,140,0.52) calc(100% / 7 * 0.55),
+      rgba(95,108,175,0.94) calc(100% / 7 * 0.95),
+      rgba(95,108,175,0.94) calc(100% / 7 * 6.05),
+      rgba(72,82,140,0.52) calc(100% / 7 * 6.45),
+      rgba(72,82,140,0.26) 100%
     );
   }
   .frets div.fret-line.fret-line-inlay{
     width:2px;
     background:linear-gradient(to bottom,
-      rgba(42,47,87,0.18) 0%,
-      rgba(42,47,87,0.48) calc(100% / 7 * 0.55),
-      rgba(42,47,87,0.96) calc(100% / 7 * 0.95),
-      rgba(42,47,87,0.96) calc(100% / 7 * 6.05),
-      rgba(42,47,87,0.48) calc(100% / 7 * 6.45),
-      rgba(42,47,87,0.18) 100%
+      rgba(88,102,185,0.35) 0%,
+      rgba(110,125,210,0.72) calc(100% / 7 * 0.55),
+      rgba(130,148,230,1) calc(100% / 7 * 0.95),
+      rgba(130,148,230,1) calc(100% / 7 * 6.05),
+      rgba(110,125,210,0.72) calc(100% / 7 * 6.45),
+      rgba(88,102,185,0.35) 100%
     );
   }
-  .frets div.fret-line.nut{width:3px !important; background:#b4b9e8 !important; opacity:.9 !important}
+  .frets div.fret-line.nut{width:3px !important; background:#c8cdf0 !important; opacity:.95 !important}
   .fret-num{position:absolute; top:-10px; transform:translateX(-50%); font-size:11px; color:var(--muted)}
-  .string{position:absolute; left:36px; right:0; height:2px; background:linear-gradient(90deg,#a1a6d9 0,#6169aa 100%); transform:translateY(-1px)}
-  .marker-dot{position:absolute; width:10px; height:10px; border-radius:50%; background:#bcd3ff; opacity:.85; transform:translate(-50%,-50%)}
+  .string{position:absolute; left:36px; right:0; height:2px; background:linear-gradient(90deg,#dce0fa 0%,#9ea8e0 55%,#8893d4 100%); transform:translateY(-1px); box-shadow:0 0 6px rgba(200,210,255,.22)}
+  .marker-dot{position:absolute; width:13px; height:13px; border-radius:50%; background:#c8dcff; opacity:.92; transform:translate(-50%,-50%); box-shadow:0 0 0 1px rgba(180,200,255,.25)}
 
   .slabel{
     position:absolute; left:6px; transform:translateY(-50%);
@@ -151,21 +151,22 @@
     width:26px; text-align:center;
   }
 
-  /* Root guide lines — stronger & brighter */
+  /* Root guide lines — strong vertical emphasis (root fret columns) */
   .guide-v{
-    position:absolute; top:0; bottom:0; width:3px;
-    transform:translateX(-1.5px);
+    position:absolute; top:0; bottom:0; width:4px;
+    transform:translateX(-2px);
     background:linear-gradient(
       180deg,
-      rgba(255,209,102,.22),
-      rgba(255,209,102,.42),
-      rgba(255,209,102,.22)
+      rgba(255,209,102,.32),
+      rgba(255,220,130,.58),
+      rgba(255,209,102,.32)
     );
     box-shadow:
-      0 0 0 1px rgba(255,209,102,.25) inset,
-      0 0 14px rgba(255,209,102,.22);
+      0 0 0 1px rgba(255,209,102,.45) inset,
+      0 0 22px rgba(255,209,102,.38),
+      0 0 40px rgba(255,200,90,.15);
     mix-blend-mode: screen;
-    opacity:.95;
+    opacity:1;
     pointer-events:none;
   }
 
@@ -176,7 +177,14 @@
     color:#0b1020; font-weight:800; font-size:12px; white-space:nowrap;
     box-shadow:0 4px 10px rgba(0,0,0,.35)
   }
-  .fb-note.root{ background:var(--root); color:#111; border-color:#c9a542 }
+  .fb-note.root{
+    background:var(--root); color:#111; border-color:#e8c04a;
+    font-size:13px; min-width:36px; height:30px;
+    box-shadow:
+      0 0 0 2px rgba(255,209,102,.55),
+      0 4px 12px rgba(0,0,0,.4),
+      0 0 24px rgba(255,209,102,.35);
+  }
   .fb-note.deg-1{ background:var(--deg1) }
   .fb-note.deg-2{ background:var(--deg2) }
   .fb-note.deg-3{ background:var(--deg3) }
@@ -185,7 +193,9 @@
 
   .dim{opacity:.22; filter:saturate(.5)}
   .pattern{box-shadow:0 0 0 3px rgba(255,255,255,.2), 0 0 18px rgba(255,255,255,.18)}
-  .pattern.root{box-shadow:0 0 0 3px rgba(255,209,102,.25), 0 0 24px rgba(255,209,102,.25)}
+  .pattern.root{
+    box-shadow:0 0 0 3px rgba(255,209,102,.45), 0 0 28px rgba(255,209,102,.4), 0 0 48px rgba(255,200,90,.2);
+  }
   .root-hint{
     background:var(--root); color:#111; opacity:.55; border-color:#c9a542;
     box-shadow:0 0 0 2px rgba(255,209,102,.15), 0 0 12px rgba(255,209,102,.12);
