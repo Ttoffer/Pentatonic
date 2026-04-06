@@ -175,7 +175,8 @@
     display:flex; align-items:center; justify-content:center;
     border-radius:999px; border:2px solid transparent;
     color:#0b1020; font-weight:800; font-size:12px; white-space:nowrap;
-    box-shadow:0 4px 10px rgba(0,0,0,.35)
+    box-shadow:0 4px 10px rgba(0,0,0,.35);
+    cursor:pointer; touch-action:manipulation;
   }
   .fb-note.root{
     background:var(--root); color:#111; border-color:#e8c04a;
@@ -199,6 +200,30 @@
   .root-hint{
     background:var(--root); color:#111; opacity:.55; border-color:#c9a542;
     box-shadow:0 0 0 2px rgba(255,209,102,.15), 0 0 12px rgba(255,209,102,.12);
+  }
+
+  /* Invisible tap targets for frets without a visible scale pill (off-scale or pattern-only hidden) */
+  .fb-fret-hit{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    min-width:28px;
+    margin:0;
+    padding:0;
+    border:none;
+    border-radius:10px;
+    background:transparent;
+    color:transparent;
+    font-size:0;
+    cursor:pointer;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .fb-fret-hit:focus{ outline:none; }
+  .fb-fret-hit:focus-visible{ box-shadow:0 0 0 2px rgba(110,168,254,.35); }
+  @media (hover:hover) and (pointer:fine){
+    .fb-fret-hit:hover{ background:rgba(110,168,254,.06); }
   }
 
   .sr-only{
@@ -297,6 +322,7 @@
     <div class="grid">
       <section class="card">
         <h2>Circle (click a key)</h2>
+        <p class="legend" style="margin:0 0 8px">Tap a key to hear that note on the low E string (standard tuning).</p>
         <div class="circle-wrap">
           <svg id="circle" width="380" height="380" viewBox="0 0 380 380" role="group" aria-label="Pentatonic key circle"></svg>
         </div>
@@ -305,6 +331,7 @@
 
       <section class="card">
         <h2>Fretboard (Strings labelled at the nut)</h2>
+        <p class="legend" style="margin:0 0 8px">Tap a labelled note or any empty fret to hear that string and fret.</p>
         <div class="fretboard">
           <div class="board">
             <div class="fb" id="fb">
@@ -351,6 +378,8 @@
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
   const FIFTHS_ORDER = [0,7,2,9,4,11,6,1,8,3,10,5];
   const TUNING = [4, 9, 2, 7, 11, 4]; // E A D G B E
+  /** Standard guitar open strings: low E2 through high E4 (12-TET, MIDI) */
+  const OPEN_STRING_MIDI = [40, 45, 50, 55, 59, 64];
 
   const SCALE_OFFSETS = {
     majorPent: [0,2,4,7,9],
@@ -400,6 +429,71 @@
     return mid ?? (hits.sort((a,b)=>Math.abs(a-7)-Math.abs(b-7))[0] ?? 0);
   }
 
+  function midiToFreq(midi){
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  /**
+   * Karplus–Strong–style pluck into an AudioBuffer (guitar-like decay).
+   */
+  function makePluckBuffer(ctx, frequency, durationSec = 1.35){
+    const sampleRate = ctx.sampleRate;
+    const n = Math.max(8, Math.round(sampleRate / frequency));
+    const total = Math.floor(durationSec * sampleRate);
+    const buffer = ctx.createBuffer(1, total, sampleRate);
+    const data = buffer.getChannelData(0);
+    const line = new Float32Array(n);
+    for (let i = 0; i < n; i++) line[i] = Math.random() * 2 - 1;
+    const decay = 0.996;
+    let p = 0;
+    for (let i = 0; i < total; i++){
+      const out = line[p];
+      line[p] = ((line[p] + line[(p + 1) % n]) * 0.5) * decay;
+      p = (p + 1) % n;
+      data[i] = out;
+    }
+    return buffer;
+  }
+
+  const GuitarAudio = (() => {
+    let ctx = null;
+    function getCtx(){
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      return ctx;
+    }
+    async function resume(){
+      const c = getCtx();
+      if (c.state === 'suspended') await c.resume();
+    }
+    function playMidi(midi){
+      const c = getCtx();
+      resume().then(() => {
+        const freq = midiToFreq(midi);
+        if (!isFinite(freq) || freq < 20 || freq > 5000) return;
+        const buf = makePluckBuffer(c, freq);
+        const src = c.createBufferSource();
+        src.buffer = buf;
+        const gain = c.createGain();
+        gain.gain.value = 0.32;
+        const lp = c.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = Math.min(8000, 1200 + freq * 4);
+        lp.Q.value = 0.7;
+        src.connect(lp);
+        lp.connect(gain);
+        gain.connect(c.destination);
+        src.start();
+        src.onended = () => { try { src.disconnect(); lp.disconnect(); gain.disconnect(); } catch(_){} };
+      }).catch(() => { /* resume/start can fail if audio is blocked */ });
+    }
+    /** Circle: pitch class on low E at the same “preferred” fret the UI uses */
+    function playPitchClass(pc){
+      const fret = preferredFretOnString(mod(pc, 12), 0);
+      playMidi(OPEN_STRING_MIDI[0] + fret);
+    }
+    return { getCtx, resume, playMidi, playPitchClass };
+  })();
+
   const circleSVG = document.getElementById('circle');
 
   // Circle nodes: use pointerdown only when supported — adding click as well runs activate
@@ -431,6 +525,7 @@
       const t = svg('text',{}); t.textContent = toNote(noteIdx); g.appendChild(t);
 
       const selectThisNote = () => {
+        GuitarAudio.playPitchClass(noteIdx);
         if (state.root === noteIdx) return;
         state.root = noteIdx;
         renderAll();
@@ -489,8 +584,9 @@
     const width = fb.clientWidth;
     const height = fb.clientHeight;
     const fretCount = state.frets;
+    const fretSpan = Math.max(1, fretCount - 1);
 
-    const xFret = f => 36 + (f / (fretCount-1)) * (width - 56);
+    const xFret = f => 36 + (f / fretSpan) * (width - 56);
     const midSlotX = f => (xFret(f - 1) + xFret(f)) / 2;
     const yRow  = r => (r+1) * (height/7);
 
@@ -628,55 +724,117 @@
       for(let s=0;s<6;s++) patternFretsByString[s] = (def[s]||[]).map(off=>RA+off);
     }
 
+    const boardW = fb.clientWidth;
+    const boardH = fb.clientHeight;
+    const rowH = boardH / 7;
+    const hitH = Math.max(26, rowH * 0.68);
+    function fretHitWidth(f){
+      const cx = x(f);
+      const leftB = f === 0 ? 36 : (x(f - 1) + cx) * 0.5;
+      const rightB = f === state.frets - 1 ? boardW - 10 : (x(f + 1) + cx) * 0.5;
+      return Math.max(28, rightB - leftB);
+    }
+
+    function attachPlayHandlers(el, play){
+      if (window.PointerEvent) {
+        el.addEventListener('pointerdown', (ev) => {
+          if (ev.button !== 0) return;
+          play();
+        });
+      } else {
+        el.addEventListener('click', play);
+      }
+    }
+
     for(let r=0;r<6;r++){
       const sIdx = visualRowToStringIndex(r);
       const open = TUNING[sIdx];
 
       for(let f=0; f<state.frets; f++){
         const idx = mod(open+f,12);
-        if(!scale.has(idx)) continue;
+        const inScale = scale.has(idx);
 
-        const rel = mod(idx - state.root, 12);
-        const di = offs.indexOf(rel);
-        const cls = DEGREE_CLASS[di];
-        const isRoot = (cls === 'root');
-
+        let di = -1;
+        let cls = '';
+        let isRoot = false;
         let inPattern = false;
-        if(state.patternOn){
-          if(useDiscrete){
-            inPattern = (patternFretsByString[sIdx]||[]).includes(f);
-          }else if(windowStart!=null){
-            inPattern = (f>=windowStart && f<=windowEnd);
+
+        if(inScale){
+          const rel = mod(idx - state.root, 12);
+          di = offs.indexOf(rel);
+          if (di >= 0){
+            cls = DEGREE_CLASS[di];
+            isRoot = (cls === 'root');
+            if(state.patternOn){
+              if(useDiscrete){
+                inPattern = (patternFretsByString[sIdx]||[]).includes(f);
+              }else if(windowStart!=null){
+                inPattern = (f>=windowStart && f<=windowEnd);
+              }
+            }
           }
         }
 
-        if(state.patternOn && state.patternOnly && !inPattern && !isRoot) continue;
+        const hasPentatonicDegree = inScale && di >= 0;
+        const hiddenByPatternOnly = hasPentatonicDegree && state.patternOn && state.patternOnly && !inPattern && !isRoot;
+        const showVisible = hasPentatonicDegree && !hiddenByPatternOnly;
 
-        const div = document.createElement('div');
-        div.className = `fb-note ${cls}`;
-        if(state.patternOn){
-          if(inPattern){
-            div.classList.add('pattern');
-          }else if(isRoot){
-            div.classList.add('root-hint');
-          }else if(!state.patternOnly){
-            div.classList.add('dim');
+        const midi = OPEN_STRING_MIDI[sIdx] + f;
+        const playFretNote = () => { GuitarAudio.playMidi(midi); };
+
+        if(showVisible){
+          const div = document.createElement('div');
+          div.className = `fb-note ${cls}`;
+          if(state.patternOn){
+            if(inPattern){
+              div.classList.add('pattern');
+            }else if(isRoot){
+              div.classList.add('root-hint');
+            }else if(!state.patternOnly){
+              div.classList.add('dim');
+            }
           }
-        }
 
-        div.style.left = `${x(f)}px`;
-        div.style.top  = `${y(r)}px`;
+          div.style.left = `${x(f)}px`;
+          div.style.top  = `${y(r)}px`;
+          div.setAttribute('data-string', String(sIdx));
+          div.setAttribute('data-fret', String(f));
+          div.setAttribute('role', 'button');
+          div.setAttribute('tabindex', '0');
+          div.setAttribute('aria-label', `Play ${toNote(idx)} on string ${6 - sIdx}, fret ${f}`);
 
-        const noteName = toNote(idx);
-        if(state.showDegrees){
-          const degTxt = labels[di];
-          div.innerHTML = `<span>${noteName}</span><span class="sub">${degTxt}</span>`;
-          div.title = `${noteName} — degree ${degTxt}`;
+          const noteName = toNote(idx);
+          if(state.showDegrees){
+            const degTxt = labels[di];
+            div.innerHTML = `<span>${noteName}</span><span class="sub">${degTxt}</span>`;
+            div.title = `${noteName} — degree ${degTxt} (tap to hear)`;
+          }else{
+            div.textContent = noteName;
+            div.title = `${noteName} (tap to hear)`;
+          }
+
+          attachPlayHandlers(div, playFretNote);
+          div.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            playFretNote();
+          });
+
+          notesLayer.appendChild(div);
         }else{
-          div.textContent = noteName;
-          div.title = noteName;
+          const hit = document.createElement('button');
+          hit.type = 'button';
+          hit.className = 'fb-fret-hit';
+          hit.style.left = `${x(f)}px`;
+          hit.style.top  = `${y(r)}px`;
+          hit.style.width = `${fretHitWidth(f)}px`;
+          hit.style.height = `${hitH}px`;
+          hit.setAttribute('aria-label', `Play string ${6 - sIdx}, fret ${f}`);
+          hit.setAttribute('tabindex', '-1');
+          hit.title = 'Tap to hear this fret';
+          attachPlayHandlers(hit, playFretNote);
+          notesLayer.appendChild(hit);
         }
-        notesLayer.appendChild(div);
       }
     }
   }
