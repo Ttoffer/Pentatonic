@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faberge Egg</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        background: radial-gradient(circle at 50% 40%, #151c3a 0%, #04060f 70%);
+      }
+
+      #overlay {
+        position: fixed;
+        left: 1rem;
+        bottom: 1rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.02em;
+        color: #d2dcff;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 0.6rem 0.8rem;
+        border-radius: 0.5rem;
+        pointer-events: none;
+        backdrop-filter: blur(2px);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay">Faberge Egg — transparency transition starts after 3s</div>
+
+    <script type="module">
+      import * as THREE from "https://unpkg.com/three@0.164.1/build/three.module.js";
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.Fog(0x04060f, 7, 16);
+
+      const camera = new THREE.PerspectiveCamera(
+        50,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      camera.position.set(0, 1.1, 6);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      document.body.append(renderer.domElement);
+
+      const mainGroup = new THREE.Group();
+      scene.add(mainGroup);
+
+      const pedestalGeo = new THREE.CylinderGeometry(1.35, 1.55, 0.4, 64);
+      const pedestalMat = new THREE.MeshStandardMaterial({
+        color: 0x5a5e73,
+        metalness: 0.75,
+        roughness: 0.25,
+      });
+      const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
+      pedestal.position.y = -1.55;
+      mainGroup.add(pedestal);
+
+      const eggShellGeo = new THREE.SphereGeometry(1.3, 96, 96);
+      eggShellGeo.scale(0.8, 1.22, 0.8);
+
+      const eggShellMat = new THREE.MeshPhysicalMaterial({
+        color: 0xead2a2,
+        metalness: 0.8,
+        roughness: 0.18,
+        clearcoat: 1,
+        clearcoatRoughness: 0.08,
+        transmission: 0,
+        thickness: 0.8,
+        transparent: true,
+        opacity: 1,
+        reflectivity: 0.85,
+      });
+
+      const eggShell = new THREE.Mesh(eggShellGeo, eggShellMat);
+      eggShell.position.y = 0.05;
+      mainGroup.add(eggShell);
+
+      const trimGeo = new THREE.TorusGeometry(0.83, 0.05, 32, 180);
+      const trimMat = new THREE.MeshStandardMaterial({
+        color: 0xe8bf56,
+        metalness: 1,
+        roughness: 0.18,
+        emissive: 0x46310a,
+        emissiveIntensity: 0.45,
+      });
+
+      const topTrim = new THREE.Mesh(trimGeo, trimMat);
+      topTrim.position.y = 0.45;
+      topTrim.rotation.x = Math.PI / 2;
+      mainGroup.add(topTrim);
+
+      const lowerTrim = topTrim.clone();
+      lowerTrim.position.y = -0.37;
+      mainGroup.add(lowerTrim);
+
+      const sapphireGeo = new THREE.OctahedronGeometry(0.55, 2);
+      const sapphireMat = new THREE.MeshPhysicalMaterial({
+        color: 0x2b56ff,
+        emissive: 0x1448ff,
+        emissiveIntensity: 0.95,
+        metalness: 0.1,
+        roughness: 0.03,
+        transmission: 0.12,
+        transparent: true,
+        opacity: 0.96,
+      });
+      const sapphire = new THREE.Mesh(sapphireGeo, sapphireMat);
+      sapphire.position.y = 0.02;
+      sapphire.scale.setScalar(0.82);
+      mainGroup.add(sapphire);
+
+      const ambient = new THREE.AmbientLight(0x8fa6ff, 0.42);
+      scene.add(ambient);
+
+      const keyLight = new THREE.DirectionalLight(0xffefca, 1.4);
+      keyLight.position.set(2.8, 3.5, 3.6);
+      scene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0x79a4ff, 0.9);
+      fillLight.position.set(-3.4, 1.7, -2.2);
+      scene.add(fillLight);
+
+      const coreGlow = new THREE.PointLight(0x2c67ff, 1.6, 7, 1.6);
+      coreGlow.position.copy(sapphire.position);
+      mainGroup.add(coreGlow);
+
+      let startTime = performance.now();
+      const transitionDelayMs = 3000;
+      const transitionDurationMs = 2600;
+
+      function easedT(t) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      }
+
+      function animate(now) {
+        const elapsed = now - startTime;
+
+        mainGroup.rotation.y += 0.01;
+        sapphire.rotation.y -= 0.03;
+        sapphire.rotation.x += 0.006;
+
+        const pulse = 1 + 0.08 * Math.sin(elapsed * 0.004);
+        sapphire.scale.setScalar(0.82 * pulse);
+        sapphireMat.emissiveIntensity = 0.8 + 0.45 * Math.sin(elapsed * 0.0035);
+        coreGlow.intensity = 1.4 + 0.7 * Math.sin(elapsed * 0.0045);
+
+        const phase = (elapsed - transitionDelayMs) / transitionDurationMs;
+        const progress = THREE.MathUtils.clamp(phase, 0, 1);
+        const smooth = easedT(progress);
+
+        eggShellMat.opacity = THREE.MathUtils.lerp(1, 0.12, smooth);
+        eggShellMat.transmission = THREE.MathUtils.lerp(0, 0.9, smooth);
+        eggShellMat.roughness = THREE.MathUtils.lerp(0.18, 0.03, smooth);
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>
