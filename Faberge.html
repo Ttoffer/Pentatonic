@@ -16,178 +16,148 @@
       body {
         margin: 0;
         min-height: 100vh;
-        display: grid;
-        place-items: center;
         overflow: hidden;
         font-family: Arial, sans-serif;
-        background: radial-gradient(circle at 50% 34%, #1d2f6a 0%, #060918 58%, #010106 100%);
+        background: radial-gradient(circle at 50% 34%, #14245d 0%, #060a1e 60%, #020208 100%);
       }
 
-      .stage {
-        position: relative;
-        width: min(84vw, 520px);
-        height: min(84vh, 620px);
-        display: grid;
-        place-items: center;
-        perspective: 950px;
-      }
-
-      .rotator {
-        position: relative;
-        width: 280px;
-        height: 440px;
-        transform-style: preserve-3d;
-        animation: spin 13s linear infinite;
-      }
-
-      .pedestal {
-        position: absolute;
-        left: 50%;
-        bottom: 8px;
-        width: 245px;
-        height: 70px;
-        transform: translateX(-50%) rotateX(70deg);
-        border-radius: 50%;
-        background: radial-gradient(circle at 40% 30%, #8f95ae 0%, #4a4f66 45%, #282b3b 100%);
-        box-shadow:
-          inset 0 10px 18px rgba(255, 255, 255, 0.15),
-          inset 0 -18px 26px rgba(0, 0, 0, 0.42),
-          0 22px 40px rgba(0, 0, 0, 0.42);
-      }
-
-      .egg-wrap {
-        position: absolute;
-        left: 50%;
-        top: 24px;
-        width: 220px;
-        height: 330px;
-        transform: translateX(-50%) rotateX(8deg);
-        transform-style: preserve-3d;
-      }
-
-      .shell {
-        position: absolute;
+      #webgl-root,
+      #fallback-root {
+        position: fixed;
         inset: 0;
-        border-radius: 50% 50% 47% 47% / 61% 61% 39% 39%;
-        background:
-          radial-gradient(circle at 25% 20%, rgba(255, 252, 236, 0.95) 0%, rgba(255, 252, 236, 0.1) 20%, transparent 42%),
-          conic-gradient(
-            from 160deg at 50% 45%,
-            #f6e6b8 0deg,
-            #bb8f44 64deg,
-            #f7e3b0 124deg,
-            #96672d 190deg,
-            #f5db9b 246deg,
-            #c69548 305deg,
-            #f5e1ad 360deg
-          );
-        border: 1px solid rgba(255, 225, 164, 0.7);
-        box-shadow:
-          inset 0 10px 20px rgba(255, 255, 255, 0.3),
-          inset 0 -26px 36px rgba(68, 30, 2, 0.5),
-          0 20px 55px rgba(0, 0, 0, 0.45);
-        animation: shell-fade 2.6s ease-in-out 3s forwards;
       }
 
-      .shell::before,
-      .shell::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        pointer-events: none;
-      }
-
-      .shell::before {
-        background:
-          repeating-linear-gradient(
-            17deg,
-            rgba(255, 232, 180, 0.33) 0px,
-            rgba(255, 232, 180, 0.33) 2px,
-            rgba(0, 0, 0, 0) 2px,
-            rgba(0, 0, 0, 0) 14px
-          ),
-          repeating-linear-gradient(
-            -17deg,
-            rgba(192, 132, 54, 0.26) 0px,
-            rgba(192, 132, 54, 0.26) 1px,
-            rgba(0, 0, 0, 0) 1px,
-            rgba(0, 0, 0, 0) 11px
-          );
-        mix-blend-mode: overlay;
-        opacity: 0.75;
-      }
-
-      .shell::after {
-        box-shadow:
-          inset 0 0 0 6px rgba(230, 188, 95, 0.66),
-          inset 0 0 0 14px rgba(91, 51, 12, 0.25);
-      }
-
-      .ring {
-        position: absolute;
-        left: 50%;
-        width: 176px;
-        height: 26px;
-        border-radius: 50%;
-        transform: translateX(-50%) rotateX(80deg);
-        background: linear-gradient(180deg, #ffd980 0%, #a5722d 100%);
-        box-shadow:
-          inset 0 4px 6px rgba(255, 247, 221, 0.4),
-          inset 0 -5px 10px rgba(72, 39, 7, 0.55),
-          0 0 12px rgba(255, 184, 66, 0.28);
-      }
-
-      .ring.top {
-        top: 104px;
-      }
-
-      .ring.bottom {
-        top: 225px;
-      }
-
-      .sapphire {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 96px;
-        height: 110px;
-        transform: translate(-50%, -52%) rotate(45deg) scale(0.84);
-        clip-path: polygon(50% 0%, 88% 24%, 100% 56%, 50% 100%, 0% 56%, 12% 24%);
-        background:
-          radial-gradient(circle at 35% 24%, rgba(185, 227, 255, 0.95) 0%, rgba(185, 227, 255, 0.15) 30%, transparent 42%),
-          linear-gradient(165deg, #9ee0ff 0%, #3f7eff 34%, #1135bc 72%, #0a1770 100%);
-        box-shadow:
-          0 0 18px rgba(93, 152, 255, 0.9),
-          0 0 55px rgba(38, 92, 255, 0.7),
-          inset 0 0 20px rgba(216, 243, 255, 0.45);
-        animation:
-          pulse 2.4s ease-in-out infinite,
-          sapphire-reveal 2.6s ease-in-out 3s forwards;
-      }
-
-      .sapphire::before {
-        content: "";
-        position: absolute;
-        inset: 8%;
-        clip-path: inherit;
-        background: linear-gradient(150deg, rgba(236, 249, 255, 0.65), rgba(0, 0, 0, 0));
-      }
-
-      .caption {
+      #ui {
         position: fixed;
         left: 1rem;
         bottom: 1rem;
-        font-size: 0.9rem;
-        letter-spacing: 0.02em;
-        color: #d2dcff;
-        background: rgba(0, 0, 0, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 0.6rem 0.8rem;
-        border-radius: 0.5rem;
+        display: flex;
+        gap: 0.65rem;
+        align-items: center;
+        z-index: 5;
       }
 
-      @keyframes spin {
+      #status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.35rem;
+        max-width: min(72vw, 620px);
+        padding: 0.54rem 0.82rem;
+        color: #d2dcff;
+        background: rgba(0, 0, 0, 0.38);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.02em;
+      }
+
+      #resetButton {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: linear-gradient(180deg, #f4d48e 0%, #9d6f30 100%);
+        color: #2a1703;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        border-radius: 0.5rem;
+        min-height: 2.35rem;
+        padding: 0.55rem 0.9rem;
+        cursor: pointer;
+      }
+
+      #resetButton:active {
+        transform: translateY(1px);
+      }
+
+      #fallback-root {
+        display: none;
+        place-items: center;
+        perspective: 960px;
+      }
+
+      .fallback-rotator {
+        position: relative;
+        width: 250px;
+        height: 390px;
+        transform-style: preserve-3d;
+        animation: fallback-spin 11s linear infinite;
+      }
+
+      .fallback-shell,
+      .fallback-heart {
+        position: absolute;
+        left: 50%;
+        transform-style: preserve-3d;
+      }
+
+      .fallback-shell {
+        top: 18px;
+        width: 210px;
+        height: 318px;
+        transform: translateX(-50%);
+        border-radius: 50% 50% 47% 47% / 61% 61% 39% 39%;
+        border: 1px solid rgba(255, 229, 181, 0.62);
+        background:
+          radial-gradient(circle at 23% 17%, rgba(255, 252, 236, 0.95) 0%, rgba(255, 252, 236, 0.1) 24%, transparent 45%),
+          conic-gradient(from 165deg at 50% 45%, #f6e6b8 0deg, #bb8f44 60deg, #f7e3b0 124deg, #96672d 194deg, #f5db9b 252deg, #c69548 309deg, #f5e1ad 360deg);
+        box-shadow:
+          inset 0 12px 20px rgba(255, 255, 255, 0.3),
+          inset 0 -28px 36px rgba(68, 30, 2, 0.5),
+          0 16px 45px rgba(0, 0, 0, 0.45);
+        animation: fallback-shell-fade 2.6s ease-in-out 3s forwards;
+      }
+
+      .fallback-heart {
+        top: 126px;
+        width: 90px;
+        height: 84px;
+        transform: translateX(-50%) rotate(-45deg) scale(0.82);
+        border-radius: 16px 16px 8px 16px;
+        background:
+          radial-gradient(circle at 28% 24%, rgba(190, 223, 255, 0.85) 0%, rgba(190, 223, 255, 0.12) 28%, transparent 44%),
+          linear-gradient(160deg, #6fb2ff 0%, #1949cd 36%, #07185f 90%);
+        box-shadow:
+          0 0 20px rgba(57, 117, 255, 0.85),
+          0 0 52px rgba(18, 58, 190, 0.72);
+        animation:
+          fallback-heart-pulse 2.2s ease-in-out infinite,
+          fallback-heart-reveal 2.6s ease-in-out 3s forwards;
+      }
+
+      .fallback-heart::before,
+      .fallback-heart::after {
+        content: "";
+        position: absolute;
+        width: 90px;
+        height: 84px;
+        border-radius: 50%;
+        background: inherit;
+      }
+
+      .fallback-heart::before {
+        top: -44px;
+        left: 0;
+      }
+
+      .fallback-heart::after {
+        top: 0;
+        left: 44px;
+      }
+
+      .fallback-pedestal {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 230px;
+        height: 62px;
+        transform: translateX(-50%) rotateX(70deg);
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 28%, #9096b1 0%, #4b5068 46%, #282b3c 100%);
+        box-shadow:
+          inset 0 8px 16px rgba(255, 255, 255, 0.13),
+          inset 0 -18px 24px rgba(0, 0, 0, 0.4),
+          0 18px 30px rgba(0, 0, 0, 0.45);
+      }
+
+      @keyframes fallback-spin {
         from {
           transform: rotateY(0deg);
         }
@@ -196,61 +166,380 @@
         }
       }
 
-      @keyframes shell-fade {
-        0% {
+      @keyframes fallback-shell-fade {
+        from {
           opacity: 1;
-          filter: saturate(1);
         }
-        100% {
+        to {
           opacity: 0.2;
-          filter: saturate(0.9);
         }
       }
 
-      @keyframes sapphire-reveal {
-        0% {
-          opacity: 0.45;
-          filter: brightness(0.8);
+      @keyframes fallback-heart-reveal {
+        from {
+          opacity: 0.4;
+          filter: brightness(0.82);
         }
-        100% {
+        to {
           opacity: 1;
-          filter: brightness(1.25);
+          filter: brightness(1.24);
         }
       }
 
-      @keyframes pulse {
+      @keyframes fallback-heart-pulse {
         0%,
         100% {
-          transform: translate(-50%, -52%) rotate(45deg) scale(0.84);
+          transform: translateX(-50%) rotate(-45deg) scale(0.82);
         }
         50% {
-          transform: translate(-50%, -52%) rotate(45deg) scale(0.92);
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .rotator,
-        .shell,
-        .sapphire {
-          animation-duration: 0.001ms;
-          animation-iteration-count: 1;
-          animation-fill-mode: forwards;
+          transform: translateX(-50%) rotate(-45deg) scale(0.93);
         }
       }
     </style>
   </head>
   <body>
-    <main class="stage" aria-label="Animated Faberge egg with sapphire center">
-      <div class="rotator">
-        <div class="pedestal"></div>
-        <div class="egg-wrap">
-          <div class="sapphire"></div>
-          <div class="shell"></div>
-          <div class="ring top"></div>
-          <div class="ring bottom"></div>
-        </div>
+    <div id="webgl-root" aria-label="3D Faberge egg scene"></div>
+
+    <div id="fallback-root" aria-label="Fallback Faberge egg scene">
+      <div class="fallback-rotator">
+        <div class="fallback-shell"></div>
+        <div class="fallback-heart"></div>
+        <div class="fallback-pedestal"></div>
       </div>
-    </main>
-    <div class="caption">Faberge Egg — shell fades after 3 seconds to reveal sapphire</div>
+    </div>
+
+    <div id="ui">
+      <button id="resetButton" type="button">Reset</button>
+      <div id="status">3D Faberge Egg — reveal begins after 3 seconds</div>
+    </div>
+
+    <script src="https://unpkg.com/three@0.164.1/build/three.min.js"></script>
+    <script>
+      (function () {
+        const webglRoot = document.getElementById("webgl-root");
+        const fallbackRoot = document.getElementById("fallback-root");
+        const resetButton = document.getElementById("resetButton");
+        const status = document.getElementById("status");
+
+        function supportsWebGL() {
+          const canvas = document.createElement("canvas");
+          return !!(
+            window.WebGLRenderingContext &&
+            (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+          );
+        }
+
+        function restartFallback() {
+          const animated = fallbackRoot.querySelectorAll(".fallback-rotator, .fallback-shell, .fallback-heart");
+          animated.forEach((el) => {
+            el.style.animation = "none";
+          });
+          requestAnimationFrame(() => {
+            animated.forEach((el) => {
+              el.style.animation = "";
+            });
+          });
+        }
+
+        function activateFallback(reason) {
+          webglRoot.style.display = "none";
+          fallbackRoot.style.display = "grid";
+          status.textContent = "Fallback mode: " + reason + " (reset still works)";
+          resetButton.onclick = restartFallback;
+        }
+
+        if (!window.THREE || !supportsWebGL()) {
+          activateFallback("WebGL unavailable");
+          return;
+        }
+
+        const THREE = window.THREE;
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x020208, 7, 16);
+
+        const camera = new THREE.PerspectiveCamera(
+          50,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          100
+        );
+        camera.position.set(0, 1.15, 6.1);
+
+        const renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+        });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        webglRoot.append(renderer.domElement);
+
+        const mainGroup = new THREE.Group();
+        scene.add(mainGroup);
+
+        const pedestal = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.36, 1.62, 0.4, 72),
+          new THREE.MeshStandardMaterial({
+            color: 0x5d6378,
+            metalness: 0.78,
+            roughness: 0.22,
+          })
+        );
+        pedestal.position.y = -1.55;
+        mainGroup.add(pedestal);
+
+        function makeEngravingTexture() {
+          const size = 1024;
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+
+          ctx.fillStyle = "#b8a06a";
+          ctx.fillRect(0, 0, size, size);
+
+          const grad = ctx.createRadialGradient(size * 0.38, size * 0.2, size * 0.1, size * 0.5, size * 0.5, size * 0.72);
+          grad.addColorStop(0, "#f0dca5");
+          grad.addColorStop(0.55, "#c49a52");
+          grad.addColorStop(1, "#8a5f22");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, size, size);
+
+          ctx.strokeStyle = "rgba(58, 35, 10, 0.92)";
+          ctx.lineWidth = 14;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.save();
+          ctx.translate(size / 2, size * 0.47);
+
+          // Stylized bird-of-prey engraving with spread wings.
+          ctx.beginPath();
+          ctx.moveTo(-300, -40);
+          ctx.quadraticCurveTo(-140, -230, -18, -92);
+          ctx.quadraticCurveTo(-10, -134, 0, -170);
+          ctx.quadraticCurveTo(10, -134, 18, -92);
+          ctx.quadraticCurveTo(140, -230, 300, -40);
+          ctx.quadraticCurveTo(194, -15, 106, 36);
+          ctx.quadraticCurveTo(53, 67, 20, 122);
+          ctx.quadraticCurveTo(6, 144, 0, 194);
+          ctx.quadraticCurveTo(-6, 144, -20, 122);
+          ctx.quadraticCurveTo(-53, 67, -106, 36);
+          ctx.quadraticCurveTo(-194, -15, -300, -40);
+          ctx.stroke();
+
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.moveTo(-250, -38);
+          ctx.quadraticCurveTo(-190, -98, -92, -75);
+          ctx.moveTo(250, -38);
+          ctx.quadraticCurveTo(190, -98, 92, -75);
+          ctx.moveTo(-126, 20);
+          ctx.quadraticCurveTo(-65, -18, -12, 20);
+          ctx.moveTo(126, 20);
+          ctx.quadraticCurveTo(65, -18, 12, 20);
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.strokeStyle = "rgba(74, 44, 12, 0.5)";
+          ctx.lineWidth = 5;
+          for (let i = 0; i < 5; i += 1) {
+            const y = 170 + i * 132;
+            ctx.beginPath();
+            ctx.ellipse(size / 2, y, 300, 52, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.ClampToEdgeWrapping;
+          texture.needsUpdate = true;
+          return texture;
+        }
+
+        const engravingTexture = makeEngravingTexture();
+        const eggShell = new THREE.Mesh(
+          (() => {
+            const geo = new THREE.SphereGeometry(1.32, 128, 128);
+            geo.scale(0.8, 1.24, 0.8);
+            return geo;
+          })(),
+          new THREE.MeshPhysicalMaterial({
+            color: 0xe6c88a,
+            map: engravingTexture,
+            bumpMap: engravingTexture,
+            bumpScale: 0.045,
+            metalness: 0.9,
+            roughness: 0.22,
+            clearcoat: 1,
+            clearcoatRoughness: 0.09,
+            transmission: 0.06,
+            thickness: 0.85,
+            transparent: true,
+            opacity: 1,
+          })
+        );
+        eggShell.position.y = 0.03;
+        mainGroup.add(eggShell);
+
+        const trimMaterial = new THREE.MeshStandardMaterial({
+          color: 0xf0c36b,
+          metalness: 1,
+          roughness: 0.15,
+          emissive: 0x4e300a,
+          emissiveIntensity: 0.4,
+        });
+
+        const topTrim = new THREE.Mesh(new THREE.TorusGeometry(0.84, 0.05, 32, 190), trimMaterial);
+        topTrim.position.y = 0.49;
+        topTrim.rotation.x = Math.PI / 2;
+        mainGroup.add(topTrim);
+
+        const lowerTrim = topTrim.clone();
+        lowerTrim.position.y = -0.42;
+        mainGroup.add(lowerTrim);
+
+        function createHeartGeometry() {
+          const shape = new THREE.Shape();
+          shape.moveTo(0, 0.38);
+          shape.bezierCurveTo(0.55, 0.92, 1.2, 0.62, 1.06, -0.09);
+          shape.bezierCurveTo(0.98, -0.56, 0.56, -0.9, 0, -1.24);
+          shape.bezierCurveTo(-0.56, -0.9, -0.98, -0.56, -1.06, -0.09);
+          shape.bezierCurveTo(-1.2, 0.62, -0.55, 0.92, 0, 0.38);
+
+          const geo = new THREE.ExtrudeGeometry(shape, {
+            depth: 0.5,
+            bevelEnabled: true,
+            bevelSegments: 6,
+            bevelThickness: 0.17,
+            bevelSize: 0.2,
+            curveSegments: 72,
+          });
+          geo.center();
+          geo.scale(0.44, 0.44, 0.44);
+          return geo;
+        }
+
+        const sapphireMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0x041a96,
+          emissive: 0x020f5d,
+          emissiveIntensity: 0.78,
+          metalness: 0.08,
+          roughness: 0.05,
+          transmission: 0.62,
+          thickness: 1.22,
+          transparent: true,
+          opacity: 0.97,
+          clearcoat: 1,
+          clearcoatRoughness: 0.04,
+        });
+
+        const sapphire = new THREE.Mesh(createHeartGeometry(), sapphireMaterial);
+        sapphire.position.y = 0.02;
+        sapphire.rotation.y = Math.PI;
+        mainGroup.add(sapphire);
+
+        const innerCore = new THREE.Mesh(
+          new THREE.IcosahedronGeometry(0.24, 2),
+          new THREE.MeshStandardMaterial({
+            color: 0x2d64ff,
+            emissive: 0x1e4bff,
+            emissiveIntensity: 1.2,
+            metalness: 0.02,
+            roughness: 0.35,
+            transparent: true,
+            opacity: 0.95,
+          })
+        );
+        sapphire.add(innerCore);
+
+        const ambient = new THREE.AmbientLight(0x98adff, 0.42);
+        scene.add(ambient);
+
+        const keyLight = new THREE.DirectionalLight(0xfff0cb, 1.55);
+        keyLight.position.set(2.6, 3.7, 3.6);
+        scene.add(keyLight);
+
+        const fillLight = new THREE.DirectionalLight(0x6792ff, 1.05);
+        fillLight.position.set(-3.7, 1.8, -2.1);
+        scene.add(fillLight);
+
+        const pulseLight = new THREE.PointLight(0x1f4bff, 1.4, 8, 1.5);
+        pulseLight.position.set(0, 0.03, 0);
+        mainGroup.add(pulseLight);
+
+        const animationState = {
+          start: performance.now(),
+          revealDelayMs: 3000,
+          revealDurationMs: 2800,
+        };
+
+        const eggMat = eggShell.material;
+        const coreMat = innerCore.material;
+        let animationFrameId = 0;
+
+        function easeInOutQuad(t) {
+          return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        }
+
+        function resetAnimation() {
+          animationState.start = performance.now();
+          mainGroup.rotation.set(0, 0, 0);
+          mainGroup.position.y = 0;
+          sapphire.rotation.set(0, Math.PI, 0);
+          innerCore.scale.setScalar(1);
+          eggMat.opacity = 1;
+          eggMat.transmission = 0.06;
+          eggMat.roughness = 0.22;
+          eggMat.metalness = 0.9;
+          pulseLight.intensity = 1.4;
+          coreMat.emissiveIntensity = 1.2;
+          status.textContent = "3D Faberge Egg reset — reveal begins after 3 seconds";
+        }
+
+        resetButton.onclick = resetAnimation;
+
+        function animate(now) {
+          const elapsed = now - animationState.start;
+
+          mainGroup.rotation.y = elapsed * 0.00048;
+          mainGroup.position.y = Math.sin(elapsed * 0.0015) * 0.07;
+
+          sapphire.rotation.y = Math.PI + elapsed * 0.00115;
+          sapphire.rotation.x = Math.sin(elapsed * 0.001) * 0.25;
+
+          const pulse = 0.78 + 0.22 * Math.sin(elapsed * 0.0057);
+          innerCore.scale.setScalar(0.86 + pulse * 0.24);
+          coreMat.emissiveIntensity = 0.95 + pulse * 1.05;
+          sapphireMaterial.emissiveIntensity = 0.5 + pulse * 0.75;
+          pulseLight.intensity = 1.1 + pulse * 1.4;
+
+          const phase = (elapsed - animationState.revealDelayMs) / animationState.revealDurationMs;
+          const progress = THREE.MathUtils.clamp(phase, 0, 1);
+          const smooth = easeInOutQuad(progress);
+
+          eggMat.opacity = THREE.MathUtils.lerp(1, 0.13, smooth);
+          eggMat.transmission = THREE.MathUtils.lerp(0.06, 0.96, smooth);
+          eggMat.roughness = THREE.MathUtils.lerp(0.22, 0.05, smooth);
+          eggMat.metalness = THREE.MathUtils.lerp(0.9, 0.58, smooth);
+
+          renderer.render(scene, camera);
+          animationFrameId = requestAnimationFrame(animate);
+        }
+
+        animationFrameId = requestAnimationFrame(animate);
+
+        window.addEventListener("resize", () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.addEventListener("beforeunload", () => {
+          cancelAnimationFrame(animationFrameId);
+        });
+      })();
+    </script>
   </body>
 </html>
