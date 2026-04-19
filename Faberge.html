@@ -39,9 +39,8 @@
   <body>
     <div id="overlay">Faberge Egg — transparency transition starts after 3s</div>
 
-    <script type="module">
-      import * as THREE from "https://unpkg.com/three@0.164.1/build/three.module.js";
-
+    <script src="https://unpkg.com/three@0.164.1/build/three.min.js"></script>
+    <script>
       const scene = new THREE.Scene();
       scene.fog = new THREE.Fog(0x04060f, 7, 16);
 
