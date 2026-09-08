@@ -118,7 +118,7 @@
     box-shadow: inset 0 0 0 1px #2a2f57, inset 0 0 32px rgba(0,0,0,.35);
   }
   .fb{position:relative; width:max(1020px,100%); height:420px}
-  .strings, .frets, .markers, .labels, .guides, .pulloffs, .notes{position:absolute; inset:0}
+  .strings, .frets, .markers, .labels, .guides, .fb-veil, .pulloffs, .notes{position:absolute; inset:0}
 
   /* layering order so guides sit under notes */
   .frets  { z-index: 1; }
@@ -127,8 +127,22 @@
   .bands  { z-index: 4; }
   .labels { z-index: 5; }
   .guides { z-index: 6; }
-  .pulloffs{ z-index: 7; pointer-events:none; }
-  .notes  { z-index: 8; }
+  .pulloffs{ z-index: 8; pointer-events:none; }
+  .notes  { z-index: 9; }
+
+  .fb-veil{
+    position:absolute; inset:0; z-index:7; pointer-events:none;
+    background:rgba(3,5,14,.62);
+    opacity:0;
+    transition:opacity .45s ease;
+  }
+  .fb.bg-dimmed .fb-veil{ opacity:1; }
+  .board:has(.fb.bg-dimmed){
+    background:#060814;
+    box-shadow: inset 0 0 0 1px #161a33, inset 0 0 40px rgba(0,0,0,.55);
+  }
+  .fb.bg-dimmed .fb-note.dim{ opacity:.1; filter:saturate(.35); }
+  .fb.bg-dimmed .root-hint{ opacity:.22; }
 
   .bands{ position:absolute; inset:0; pointer-events:none; }
   .box-band{
@@ -245,20 +259,31 @@
   .fb-note .sub{font-weight:700; opacity:.85; font-size:11px; margin-left:6px}
 
   .dim{opacity:.22; filter:saturate(.5)}
-  .pattern{box-shadow:0 0 0 3px rgba(255,255,255,.2), 0 0 18px rgba(255,255,255,.18)}
+  .pattern{
+    filter:brightness(1.22) saturate(1.12);
+    box-shadow:
+      0 0 0 3px rgba(255,255,255,.62),
+      0 0 14px rgba(255,255,255,.55),
+      0 0 28px rgba(255,255,255,.32);
+  }
   .pattern.root{
-    box-shadow:0 0 0 3px rgba(255,209,102,.45), 0 0 28px rgba(255,209,102,.4), 0 0 48px rgba(255,200,90,.2);
+    filter:brightness(1.24) saturate(1.08);
+    box-shadow:
+      0 0 0 3px rgba(255,209,102,.9),
+      0 0 18px rgba(255,209,102,.72),
+      0 0 36px rgba(255,200,90,.42);
   }
   .fb-note.in-next{
-    box-shadow:0 0 0 2px rgba(255,255,255,.28), 0 4px 10px rgba(0,0,0,.35);
+    filter:brightness(1.08) saturate(1.04);
+    box-shadow:0 0 0 2px rgba(255,255,255,.42), 0 4px 12px rgba(0,0,0,.35), 0 0 14px rgba(255,255,255,.22);
   }
   .fb-note.box-link{
-    outline:2px dashed rgba(255,255,255,.85);
+    outline:2px dashed rgba(255,255,255,.95);
     outline-offset:3px;
     box-shadow:
-      0 0 0 3px rgba(255,255,255,.25),
+      0 0 0 3px rgba(255,255,255,.4),
       0 4px 12px rgba(0,0,0,.4),
-      0 0 22px rgba(255,255,255,.2);
+      0 0 26px rgba(255,255,255,.32);
   }
   .fb-note.pulse-added{
     animation: pulse-added-note 3s ease-in-out 1;
@@ -289,6 +314,7 @@
     .fb-note.pulse-added,
     .box-card.pulse-added,
     .box-band.pulse-added{ animation:none; }
+    .fb-veil{ transition:none; }
   }
   .root-hint{
     background:var(--root); color:#111; opacity:.55; border-color:#c9a542;
@@ -379,6 +405,16 @@
   .fb-pattern-bar .seg button{
     min-width:36px; padding:6px 10px; font-size:13px;
   }
+  .fb-pulloff{
+    background:#0d1024; border:1px solid #2a2f57; border-radius:10px;
+    padding:6px 10px; display:inline-flex; gap:6px; align-items:center;
+    font-size:13px; font-weight:600; color:var(--text); cursor:pointer; user-select:none;
+  }
+  .fb-pulloff .dot.po{ background:var(--po); width:10px; height:10px; }
+  .fb-pulloff:has(input:checked){
+    border-color:var(--po); color:var(--text);
+    box-shadow:0 0 0 1px rgba(255,180,162,.35);
+  }
   .fb-caged button[data-box="1"]{ box-shadow:inset 0 3px 0 var(--box1); }
   .fb-caged button[data-box="2"]{ box-shadow:inset 0 3px 0 var(--box2); }
   .fb-caged button[data-box="3"]{ box-shadow:inset 0 3px 0 var(--box3); }
@@ -389,6 +425,10 @@
   .fb-caged button.active[data-box="3"]{ box-shadow:inset 0 3px 0 #0d1024; }
   .fb-caged button.active[data-box="4"]{ box-shadow:inset 0 3px 0 #0d1024; }
   .fb-caged button.active[data-box="5"]{ box-shadow:inset 0 3px 0 #0d1024; }
+  .fb-caged button.in-chain{
+    color:var(--text);
+    border-color:rgba(110,168,254,.45);
+  }
   .box-gallery{
     display:grid; grid-template-columns:repeat(5, minmax(120px, 1fr)); gap:10px; margin:12px 0;
   }
@@ -408,8 +448,9 @@
     border-color:var(--accent); outline:none;
   }
   .box-card.active{
-    background:#151a3c;
-    box-shadow:0 0 0 1px rgba(110,168,254,.45), 0 8px 20px rgba(0,0,0,.25);
+    background:#1c2558;
+    box-shadow:0 0 0 1px rgba(110,168,254,.75), 0 8px 22px rgba(110,168,254,.28);
+    filter:brightness(1.08);
   }
   .box-card.in-chain:not(.active){
     border-color:rgba(110,168,254,.45);
@@ -438,6 +479,7 @@
     .fb-head-note{ display:none; }
     .fb-tap-hint, .fb-caged-hint{ display:none; }
     .fb-pattern-bar .seg button{ min-width:32px; padding:5px 8px; font-size:12px; }
+    .fb-pulloff{ padding:5px 8px; font-size:12px; }
     #circle{ width:min(240px, 58vh); height:min(240px, 58vh); }
     .circle-wrap{ padding:0; }
     .circle-panel > .legend{ margin-bottom:4px !important; }
@@ -466,8 +508,8 @@
       </div>
       <div class="controls">
         <div class="seg" role="tablist" aria-label="Scale type">
-          <button id="btnMajor" class="active" aria-pressed="true">Major Pentatonic</button>
-          <button id="btnMinor" aria-pressed="false">Minor Pentatonic</button>
+          <button id="btnMajor" aria-pressed="false">Major Pentatonic</button>
+          <button id="btnMinor" class="active" aria-pressed="true">Minor Pentatonic</button>
         </div>
         <label><input type="checkbox" id="chkPattern" checked /> Pattern overlay</label>
         <label><input type="checkbox" id="chkBoxes" checked /> Five CAGED boxes</label>
@@ -485,7 +527,7 @@
         </label>
         <label><input type="checkbox" id="chkDegrees" /> Show degree labels</label>
         <label><input type="checkbox" id="chkFlip" checked /> Low E at bottom (E A D G B E, like TAB)</label>
-        <div class="pill" id="currentKey">Key: C • Major Pentatonic</div>
+        <div class="pill" id="currentKey">Key: E • Minor Pentatonic</div>
       </div>
     </header>
 
@@ -543,6 +585,11 @@
               <button type="button" class="fb-chain-btn" data-chain="4" aria-pressed="false" title="Four in a row">4</button>
               <button type="button" class="fb-chain-btn" data-chain="5" aria-pressed="false" title="Five in a row">5</button>
             </div>
+            <label class="fb-pulloff" title="Show whole-step pull-off pairs on the selected boxes">
+              <input type="checkbox" id="chkPulloffFb" />
+              <span class="dot po" aria-hidden="true"></span>
+              <span class="fb-pulloff-label">Pull-off pairs</span>
+            </label>
           </div>
         </div>
         <p class="legend fb-tap-hint" style="margin:0 0 8px">Tap a labelled note or any empty fret to hear that string and fret.</p>
@@ -555,6 +602,7 @@
               <div class="bands" id="bands"></div>
               <div class="labels" id="labels"></div>
               <div class="guides" id="guides"></div>
+              <div class="fb-veil" id="fbVeil" aria-hidden="true"></div>
               <div class="pulloffs" id="pulloffs"></div>
               <div class="notes" id="notes"></div>
             </div>
@@ -625,8 +673,8 @@
   const MARKER_DOT_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21];
 
   const state = {
-    root: 0,
-    mode: "majorPent",
+    root: 4,
+    mode: "minorPent",
     showDegrees: false,
     highEOnTop: true,
     patternOn: true,
@@ -635,6 +683,7 @@
     boxStart: 1,
     boxChain: 2,
     pulseItems: [],
+    boardDimmed: false,
     showPulloffs: false,
     preset: PRESET.E_ROOT,
     frets: 22
@@ -737,22 +786,29 @@
     }
     state.pulseItems = [];
   }
+  function finishPulseAndDim(){
+    state.pulseItems = [];
+    state.boardDimmed = true;
+    pulseTimer = null;
+    renderAll();
+  }
   function startAddedPatternPulse(newItems){
     stopAddedPatternPulse();
+    state.boardDimmed = false;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce || !newItems.length){
+    const items = (newItems && newItems.length) ? newItems : chainItems().slice(-1);
+    if (reduce || !items.length){
+      state.boardDimmed = true;
       renderAll();
       return;
     }
     let i = 0;
     const showNext = () => {
-      if (i >= newItems.length){
-        state.pulseItems = [];
-        pulseTimer = null;
-        renderAll();
+      if (i >= items.length){
+        finishPulseAndDim();
         return;
       }
-      state.pulseItems = [newItems[i]];
+      state.pulseItems = [items[i]];
       i += 1;
       renderAll();
       pulseTimer = setTimeout(showNext, 3000);
@@ -1082,6 +1138,9 @@
     renderBoxBands();
     renderBoxGallery();
     updateChainCaption();
+    syncChainButtons();
+    syncFbCagedButtons();
+    fb.classList.toggle('bg-dimmed', !!(state.boardDimmed && state.boxMode && state.patternOn));
     renderNotes();
     renderOverlays();
   }
@@ -1103,7 +1162,7 @@
       if (itemIsPulsing(item)) band.classList.add('pulse-added');
       band.style.left = `${left}px`;
       band.style.width = `${Math.max(18, right - left)}px`;
-      band.style.opacity = i === 0 ? '0.22' : '0.14';
+      band.style.opacity = i === 0 ? '0.36' : '0.16';
       bandsLayer.appendChild(band);
     });
   }
@@ -1175,14 +1234,7 @@
       spanEl.textContent = span ? `Frets ${span.min}–${span.max}` : 'Off the board';
       btn.appendChild(spanEl);
       btn.setAttribute('aria-pressed', id === state.boxStart ? 'true' : 'false');
-      btn.addEventListener('click', () => {
-        state.boxStart = id;
-        state.boxMode = true;
-        const chk = document.getElementById('chkBoxes');
-        if (chk) chk.checked = true;
-        stopAddedPatternPulse();
-        renderAll();
-      });
+      btn.addEventListener('click', () => setBoxStart(id));
       gallery.appendChild(btn);
     }
   }
@@ -1423,7 +1475,13 @@
     state.patternOn = e.target.checked; renderAll();
   });
   document.getElementById('chkBoxes').addEventListener('change', e=>{
-    state.boxMode = e.target.checked; renderAll();
+    if (e.target.checked) applyExampleEMinorOpen();
+    else {
+      state.boxMode = false;
+      state.boardDimmed = false;
+      stopAddedPatternPulse();
+      renderAll();
+    }
   });
   document.getElementById('chkPatternOnly').addEventListener('change', e=>{
     state.patternOnly = e.target.checked; renderAll();
@@ -1439,8 +1497,19 @@
   });
 
   document.getElementById('chkPulloff').addEventListener('change', e=>{
-    state.showPulloffs = e.target.checked; renderAll();
+    setShowPulloffs(e.target.checked);
   });
+  document.getElementById('chkPulloffFb').addEventListener('change', e=>{
+    setShowPulloffs(e.target.checked);
+  });
+  function setShowPulloffs(on){
+    state.showPulloffs = on;
+    const main = document.getElementById('chkPulloff');
+    const fb = document.getElementById('chkPulloffFb');
+    if (main) main.checked = on;
+    if (fb) fb.checked = on;
+    renderAll();
+  }
 
   function syncModeButtons(){
     const isMajor = state.mode === 'majorPent';
@@ -1451,50 +1520,68 @@
   }
   function syncChainButtons(){
     [1,2,3,4,5].forEach(n => {
+      const on = state.boxChain === n;
       const btn = document.getElementById(`btnChain${n}`);
-      if (!btn) return;
-      btn.classList.toggle('active', state.boxChain === n);
-      btn.setAttribute('aria-pressed', state.boxChain === n ? 'true' : 'false');
+      if (btn){
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
     });
+    document.querySelectorAll('.fb-chain-btn').forEach(btn => {
+      const on = Number(btn.dataset.chain) === state.boxChain;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  function syncFbCagedButtons(){
+    const chainIds = new Set(chainItems().map(it => it.displayId));
+    document.querySelectorAll('.fb-caged-btn').forEach(btn => {
+      const id = Number(btn.dataset.box);
+      const isStart = id === state.boxStart;
+      btn.classList.toggle('active', isStart);
+      btn.classList.toggle('in-chain', !isStart && chainIds.has(id));
+      btn.setAttribute('aria-pressed', isStart ? 'true' : 'false');
+    });
+  }
+  function enableBoxMode(){
+    state.boxMode = true;
+    const chk = document.getElementById('chkBoxes');
+    if (chk) chk.checked = true;
+  }
+  function setBoxStart(id){
+    state.boxStart = id;
+    enableBoxMode();
+    state.boardDimmed = false;
+    stopAddedPatternPulse();
+    renderAll();
   }
   function setBoxChain(n){
     const prevKeys = new Set(chainItems().map(chainItemKey));
     const grew = n > state.boxChain;
     state.boxChain = n;
-    state.boxMode = true;
-    const chk = document.getElementById('chkBoxes');
-    if (chk) chk.checked = true;
+    enableBoxMode();
     syncChainButtons();
-    if (grew){
-      const added = chainItems().filter(it => !prevKeys.has(chainItemKey(it)));
-      startAddedPatternPulse(added);
-    } else {
-      stopAddedPatternPulse();
-      renderAll();
-    }
+    const added = chainItems().filter(it => !prevKeys.has(chainItemKey(it)));
+    startAddedPatternPulse(grew ? added : []);
   }
   document.getElementById('btnChain1').addEventListener('click', ()=>setBoxChain(1));
   document.getElementById('btnChain2').addEventListener('click', ()=>setBoxChain(2));
   document.getElementById('btnChain3').addEventListener('click', ()=>setBoxChain(3));
   document.getElementById('btnChain4').addEventListener('click', ()=>setBoxChain(4));
   document.getElementById('btnChain5').addEventListener('click', ()=>setBoxChain(5));
+  document.querySelectorAll('.fb-chain-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBoxChain(Number(btn.dataset.chain)));
+  });
+  document.querySelectorAll('.fb-caged-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBoxStart(Number(btn.dataset.box)));
+  });
   document.getElementById('btnChainPrev').addEventListener('click', ()=>{
-    state.boxStart = state.boxStart === 1 ? 5 : state.boxStart - 1;
-    state.boxMode = true;
-    const chk = document.getElementById('chkBoxes');
-    if (chk) chk.checked = true;
-    stopAddedPatternPulse();
-    renderAll();
+    setBoxStart(state.boxStart === 1 ? 5 : state.boxStart - 1);
   });
   document.getElementById('btnChainNext').addEventListener('click', ()=>{
-    state.boxStart = state.boxStart === 5 ? 1 : state.boxStart + 1;
-    state.boxMode = true;
-    const chk = document.getElementById('chkBoxes');
-    if (chk) chk.checked = true;
-    stopAddedPatternPulse();
-    renderAll();
+    setBoxStart(state.boxStart === 5 ? 1 : state.boxStart + 1);
   });
-  document.getElementById('btnExampleOpen').addEventListener('click', ()=>{
+  function applyExampleEMinorOpen(){
     state.root = 4; // E
     state.mode = 'minorPent';
     state.boxMode = true;
@@ -1503,11 +1590,13 @@
     state.patternOn = true;
     document.getElementById('chkBoxes').checked = true;
     document.getElementById('chkPattern').checked = true;
+    state.boardDimmed = false;
     syncModeButtons();
     syncChainButtons();
     stopAddedPatternPulse();
     renderAll();
-  });
+  }
+  document.getElementById('btnExampleOpen').addEventListener('click', applyExampleEMinorOpen);
 
   const iosHelpModal = document.getElementById('iosHelpModal');
   const btnIosHelp = document.getElementById('btnIosHelp');
