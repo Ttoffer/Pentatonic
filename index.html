@@ -27,6 +27,13 @@
     --deg2:#8aff85;   /* 3 or 4  */
     --deg3:#b38bff;   /* 5       */
     --deg4:#ff9494;   /* 6 or b7 */
+
+    --box1:#6ea8fe;
+    --box2:#5ee0c8;
+    --box3:#ffd166;
+    --box4:#ff9494;
+    --box5:#b38bff;
+    --po:#ffb4a2;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:radial-gradient(1200px 1200px at 70% -300px,#1b1f40 0%,#0f1220 60%);color:var(--text);font:500 16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial;-webkit-tap-highlight-color:transparent}
@@ -105,15 +112,33 @@
     box-shadow: inset 0 0 0 1px #2a2f57, inset 0 0 32px rgba(0,0,0,.35);
   }
   .fb{position:relative; width:max(1020px,100%); height:420px}
-  .strings, .frets, .markers, .labels, .guides, .notes{position:absolute; inset:0}
+  .strings, .frets, .markers, .labels, .guides, .pulloffs, .notes{position:absolute; inset:0}
 
   /* layering order so guides sit under notes */
   .frets  { z-index: 1; }
   .strings{ z-index: 2; }
   .markers{ z-index: 3; }
-  .labels { z-index: 4; }
-  .guides { z-index: 5; }
-  .notes  { z-index: 6; }
+  .bands  { z-index: 4; }
+  .labels { z-index: 5; }
+  .guides { z-index: 6; }
+  .pulloffs{ z-index: 7; pointer-events:none; }
+  .notes  { z-index: 8; }
+
+  .bands{ position:absolute; inset:0; pointer-events:none; }
+  .box-band{
+    position:absolute; top:0; bottom:0;
+    border-radius:8px;
+    opacity:.18;
+    mix-blend-mode:screen;
+  }
+  .box-band.b1{ background:var(--box1); }
+  .box-band.b2{ background:var(--box2); }
+  .box-band.b3{ background:var(--box3); }
+  .box-band.b4{ background:var(--box4); }
+  .box-band.b5{ background:var(--box5); }
+  .box-band.pulse-added{
+    animation: pulse-added-band 3s ease-in-out 1;
+  }
 
   /* Fret wires at each fret position; emphasised frets (typical board pattern) slightly stronger */
   .frets div.fret-line{
@@ -149,6 +174,27 @@
     font-size:13px; font-weight:800; color:#d7dcff; opacity:.9;
     background:rgba(0,0,0,.25); padding:2px 6px; border-radius:6px; border:1px solid #2a2f57;
     width:26px; text-align:center;
+  }
+  .po-link{
+    position:absolute; height:4px; border-radius:99px;
+    background:linear-gradient(90deg, rgba(255,180,162,.15), rgba(255,180,162,.95), rgba(255,180,162,.15));
+    box-shadow:0 0 8px rgba(255,180,162,.35);
+    transform:translateY(-50%);
+  }
+  .po-label{
+    position:absolute; font-size:9px; font-weight:800; letter-spacing:.04em;
+    color:#1a1020; background:var(--po); padding:1px 5px; border-radius:6px;
+    transform:translate(-50%,-130%);
+  }
+  .overlay-controls{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0 4px;
+  }
+  .overlay-controls .overlay-kicker{
+    font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);
+  }
+  .overlay-controls label{
+    background:#0d1024; border:1px solid #2a2f57; border-radius:10px; padding:8px 12px; display:inline-flex; gap:8px; align-items:center;
+    font-size:13px;
   }
 
   /* Root guide lines — strong vertical emphasis (root fret columns) */
@@ -196,6 +242,47 @@
   .pattern{box-shadow:0 0 0 3px rgba(255,255,255,.2), 0 0 18px rgba(255,255,255,.18)}
   .pattern.root{
     box-shadow:0 0 0 3px rgba(255,209,102,.45), 0 0 28px rgba(255,209,102,.4), 0 0 48px rgba(255,200,90,.2);
+  }
+  .fb-note.in-next{
+    box-shadow:0 0 0 2px rgba(255,255,255,.28), 0 4px 10px rgba(0,0,0,.35);
+  }
+  .fb-note.box-link{
+    outline:2px dashed rgba(255,255,255,.85);
+    outline-offset:3px;
+    box-shadow:
+      0 0 0 3px rgba(255,255,255,.25),
+      0 4px 12px rgba(0,0,0,.4),
+      0 0 22px rgba(255,255,255,.2);
+  }
+  .fb-note.pulse-added{
+    animation: pulse-added-note 3s ease-in-out 1;
+    z-index: 2;
+  }
+  .box-card.pulse-added{
+    animation: pulse-added-card 3s ease-in-out 1;
+  }
+  @keyframes pulse-added-note{
+    0%, 100%{ filter:brightness(1); transform:translate(-50%,-50%) scale(1); }
+    16%{ filter:brightness(1.75); transform:translate(-50%,-50%) scale(1.12); }
+    32%{ filter:brightness(1.2); transform:translate(-50%,-50%) scale(1.03); }
+    48%{ filter:brightness(1.7); transform:translate(-50%,-50%) scale(1.1); }
+    64%{ filter:brightness(1.22); transform:translate(-50%,-50%) scale(1.03); }
+    80%{ filter:brightness(1.5); transform:translate(-50%,-50%) scale(1.07); }
+  }
+  @keyframes pulse-added-card{
+    0%, 100%{ filter:brightness(1); }
+    25%, 75%{ filter:brightness(1.45); }
+    50%{ filter:brightness(1.12); }
+  }
+  @keyframes pulse-added-band{
+    0%, 100%{ filter:brightness(1); opacity:.14; }
+    25%, 75%{ filter:brightness(1.55); opacity:.4; }
+    50%{ filter:brightness(1.15); opacity:.22; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .fb-note.pulse-added,
+    .box-card.pulse-added,
+    .box-band.pulse-added{ animation:none; }
   }
   .root-hint{
     background:var(--root); color:#111; opacity:.55; border-color:#c9a542;
@@ -276,6 +363,54 @@
   }
   .modal-primary:hover,.modal-primary:focus-visible{ filter:brightness(1.06); outline:none; }
   .modal-primary:focus-visible{ box-shadow:0 0 0 2px rgba(110,168,254,.5); }
+
+  .boxes-panel{ margin-top:16px; }
+  .boxes-head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:8px;
+  }
+  .boxes-head h2{ margin:0; }
+  .draft-pill{ color:var(--accent); }
+  .box-gallery{
+    display:grid; grid-template-columns:repeat(5, minmax(120px, 1fr)); gap:10px; margin:12px 0;
+  }
+  @media (max-width:900px){
+    .box-gallery{ grid-template-columns:repeat(3, 1fr); }
+  }
+  @media (max-width:560px){
+    .box-gallery{ grid-template-columns:repeat(2, 1fr); }
+  }
+  .box-card{
+    appearance:none; display:flex; flex-direction:column; gap:6px; text-align:left;
+    background:#0d1024; border:1px solid #2a2f57; border-radius:14px; padding:10px 10px 8px;
+    color:var(--text); cursor:pointer; font:inherit;
+    transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .box-card:hover,.box-card:focus-visible{
+    border-color:var(--accent); outline:none;
+  }
+  .box-card.active{
+    background:#151a3c;
+    box-shadow:0 0 0 1px rgba(110,168,254,.45), 0 8px 20px rgba(0,0,0,.25);
+  }
+  .box-card.in-chain:not(.active){
+    border-color:rgba(110,168,254,.45);
+  }
+  .box-card-head{ display:flex; justify-content:space-between; align-items:baseline; gap:6px; }
+  .box-card-head strong{ font-size:13px; letter-spacing:.02em; }
+  .box-card-head span{ font-size:11px; color:var(--muted); font-weight:700; }
+  .box-card-span{ font-size:11px; color:var(--muted); }
+  .box-mini{ width:100%; height:72px; display:block; }
+  .chain-controls{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:4px 0 8px; }
+  .chain-controls .seg{ flex-wrap:wrap; }
+  .chain-controls .ghost{
+    appearance:none; border:1px solid #2a2f57; background:#0d1024; color:var(--text);
+    border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:600;
+  }
+  .chain-controls .ghost:hover,.chain-controls .ghost:focus-visible{
+    border-color:var(--accent); outline:none;
+  }
+  #chainCaption{ margin:0; }
+  .overlay-legend .dot.po{ background:var(--po); }
 </style>
 </head>
 <body>
@@ -301,6 +436,7 @@
           <button id="btnMinor" aria-pressed="false">Minor Pentatonic</button>
         </div>
         <label><input type="checkbox" id="chkPattern" checked /> Pattern overlay</label>
+        <label><input type="checkbox" id="chkBoxes" checked /> Five CAGED boxes</label>
         <label><input type="checkbox" id="chkPatternOnly" /> Show only pattern notes (keeps root hints + guide lines)</label>
         <label>Preset:
           <select id="presetSelect">
@@ -318,6 +454,35 @@
         <div class="pill" id="currentKey">Key: C • Major Pentatonic</div>
       </div>
     </header>
+
+    <section class="card boxes-panel" id="boxesPanel">
+      <div class="boxes-head">
+        <h2>Five patterns (CAGED)</h2>
+        <div class="pill draft-pill">Draft — linked boxes</div>
+      </div>
+      <p class="legend" style="margin:0 0 4px">
+        Each key uses five connected boxes. Pattern 1 is the home box (tonic on the low E).
+        Click a box to start there, then add the next pattern(s) up the neck.
+      </p>
+      <div class="box-gallery" id="boxGallery"></div>
+      <div class="chain-controls">
+        <div class="seg" role="tablist" aria-label="How many patterns to show">
+          <button type="button" id="btnChain1" aria-pressed="false">This pattern</button>
+          <button type="button" id="btnChain2" class="active" aria-pressed="true">This + next</button>
+          <button type="button" id="btnChain3" aria-pressed="false">Three in a row</button>
+          <button type="button" id="btnChain4" aria-pressed="false">Four in a row</button>
+          <button type="button" id="btnChain5" aria-pressed="false">Five in a row</button>
+        </div>
+        <button type="button" class="ghost" id="btnChainPrev">Previous box</button>
+        <button type="button" class="ghost" id="btnChainNext">Next box along the neck</button>
+        <button type="button" class="ghost" id="btnExampleOpen">Example: E minor open → fret 5</button>
+      </div>
+      <div class="overlay-controls" aria-label="Pull-off overlay">
+        <span class="overlay-kicker">Overlays</span>
+        <label><input type="checkbox" id="chkPulloff" /> Pull-off pairs</label>
+      </div>
+      <p class="pill" id="chainCaption">Pick a starting pattern.</p>
+    </section>
 
     <div class="grid">
       <section class="card">
@@ -338,15 +503,20 @@
               <div class="frets" id="frets"></div>
               <div class="strings" id="strings"></div>
               <div class="markers" id="markers"></div>
+              <div class="bands" id="bands"></div>
               <div class="labels" id="labels"></div>
               <div class="guides" id="guides"></div>
+              <div class="pulloffs" id="pulloffs"></div>
               <div class="notes" id="notes"></div>
             </div>
           </div>
         </div>
+        <div class="legend overlay-legend">
+          <span class="badge"><span class="dot po"></span>Pull-off pair</span>
+        </div>
         <div class="legend">
-          Presets: **Low E root** (original) • **A string root** (mirrored) • **CAGED windows**.  
-          Pattern overlay: strong focus notes; off-pattern roots remain as soft hints; vertical guide lines at all root frets.
+          Five CAGED boxes: pick a starting pattern, then show the next one along the neck. Shared notes are the link.
+          Turn on pull-off pairs to see whole-step neighbours on a string (one middle fret between them — not the 3-fret stretch).
         </div>
       </section>
     </div>
@@ -412,6 +582,11 @@
     highEOnTop: true,
     patternOn: true,
     patternOnly: false,
+    boxMode: true,
+    boxStart: 1,
+    boxChain: 2,
+    pulseItems: [],
+    showPulloffs: false,
     preset: PRESET.E_ROOT,
     frets: 22
   };
@@ -427,6 +602,166 @@
     for(let f=0; f<=21; f++) if(mod(open+f,12)===rootIdx) hits.push(f);
     const mid = hits.find(f=>f>=3 && f<=12);
     return mid ?? (hits.sort((a,b)=>Math.abs(a-7)-Math.abs(b-7))[0] ?? 0);
+  }
+
+  /**
+   * Five minor-pentatonic boxes as fret offsets from Pattern 1's 6th-string root.
+   * Major mode uses the same shapes, rotated so Pattern 1 has the major tonic on the low E.
+   * CAGED letters E D C A G follow that home box up the neck.
+   */
+  const MINOR_BOXES = [
+    { frets:{ 0:[0,3],  1:[0,2],  2:[0,2],  3:[0,2],  4:[0,3],  5:[0,3]  } },
+    { frets:{ 0:[3,5],  1:[2,5],  2:[2,5],  3:[2,4],  4:[3,5],  5:[3,5]  } },
+    { frets:{ 0:[5,7],  1:[5,7],  2:[5,7],  3:[4,7],  4:[5,8],  5:[5,7]  } },
+    { frets:{ 0:[7,10], 1:[7,9],  2:[7,9],  3:[7,9],  4:[8,10], 5:[7,10] } },
+    { frets:{ 0:[-2,0], 1:[-2,0], 2:[-3,0], 3:[-3,0], 4:[-2,0], 5:[-2,0] } },
+  ];
+  const BOX_CAGED = ['E','D','C','A','G'];
+  const BOX_COLORS = ['var(--box1)','var(--box2)','var(--box3)','var(--box4)','var(--box5)'];
+
+  function minorRootPc(){
+    return state.mode === 'majorPent' ? relMinor(state.root) : state.root;
+  }
+  function boxHomeFret(rootIdx){
+    const open = TUNING[0];
+    const hits = [];
+    for(let f=0; f<=21; f++) if(mod(open+f,12)===rootIdx) hits.push(f);
+    const nutSide = hits.find(f => f <= 8);
+    if (nutSide != null) return nutSide;
+    const mid = hits.find(f => f >= 3 && f <= 12);
+    return mid ?? (hits[0] ?? 0);
+  }
+  function boxBaseFret(){
+    return boxHomeFret(minorRootPc());
+  }
+  function minorBoxIndex(displayId){
+    const shift = state.mode === 'majorPent' ? 1 : 0;
+    return (displayId - 1 + shift) % 5;
+  }
+  function chainItems(){
+    const items = [];
+    let prevMin = -Infinity;
+    for(let i=0; i<state.boxChain; i++){
+      const raw = state.boxStart - 1 + i;
+      const displayId = (raw % 5) + 1;
+      const minorIndex = minorBoxIndex(displayId);
+      let octave = Math.floor(raw / 5);
+      let span = boxFretSpan(minorIndex, octave);
+      // Keep the chain walking up the neck. Pattern 4/5 can sit below Pattern 1
+      // at the open end; once you have already passed them, lift a twelfth.
+      while (span && span.max < prevMin){
+        const lifted = boxFretSpan(minorIndex, octave + 1);
+        if (!lifted) break;
+        octave += 1;
+        span = lifted;
+      }
+      if (span) prevMin = span.min;
+      items.push({
+        displayId,
+        octave,
+        minorIndex,
+        shift: boxShift(minorIndex, octave),
+      });
+    }
+    return items;
+  }
+  function chainItemKey(item){
+    return `${item.displayId}:${item.octave}:${item.shift}`;
+  }
+  function noteInPulse(sIdx, fret){
+    if (!state.pulseItems.length) return false;
+    const base = boxBaseFret();
+    return state.pulseItems.some(item =>
+      boxContainsFret(item.minorIndex, sIdx, fret, base, item.shift)
+    );
+  }
+  function itemIsPulsing(item){
+    return state.pulseItems.some(p =>
+      p.displayId === item.displayId && p.octave === item.octave && p.shift === item.shift
+    );
+  }
+  let pulseTimer = null;
+  function stopAddedPatternPulse(){
+    if (pulseTimer){
+      clearTimeout(pulseTimer);
+      pulseTimer = null;
+    }
+    state.pulseItems = [];
+  }
+  function startAddedPatternPulse(newItems){
+    stopAddedPatternPulse();
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !newItems.length){
+      renderAll();
+      return;
+    }
+    let i = 0;
+    const showNext = () => {
+      if (i >= newItems.length){
+        state.pulseItems = [];
+        pulseTimer = null;
+        renderAll();
+        return;
+      }
+      state.pulseItems = [newItems[i]];
+      i += 1;
+      renderAll();
+      pulseTimer = setTimeout(showNext, 3000);
+    };
+    showNext();
+  }
+  function boxShift(minorIndex, octave){
+    const base = boxBaseFret();
+    let shift = octave * 12;
+    let minF = Infinity;
+    for (let s=0; s<6; s++){
+      for (const off of MINOR_BOXES[minorIndex].frets[s] || []){
+        minF = Math.min(minF, base + off + shift);
+      }
+    }
+    if (minF < 0) shift += 12;
+    return shift;
+  }
+  function realizedFrets(off, baseFret, shift){
+    const f = baseFret + off + shift;
+    return (f >= 0 && f < state.frets) ? [f] : [];
+  }
+  function boxContainsFret(minorIndex, sIdx, fret, baseFret, shift){
+    const offs = MINOR_BOXES[minorIndex].frets[sIdx] || [];
+    return offs.some(off => realizedFrets(off, baseFret, shift).includes(fret));
+  }
+  function noteBoxIds(sIdx, fret){
+    if (!state.boxMode) return [];
+    const base = boxBaseFret();
+    const ids = [];
+    for (const item of chainItems()){
+      if (boxContainsFret(item.minorIndex, sIdx, fret, base, item.shift)) ids.push(item.displayId);
+    }
+    return ids;
+  }
+  function boxFretSpan(minorIndex, octave){
+    const base = boxBaseFret();
+    const shift = boxShift(minorIndex, octave);
+    let min = Infinity, max = -Infinity;
+    for (let s=0; s<6; s++){
+      for (const off of MINOR_BOXES[minorIndex].frets[s] || []){
+        for (const f of realizedFrets(off, base, shift)){
+          min = Math.min(min, f);
+          max = Math.max(max, f);
+        }
+      }
+    }
+    return Number.isFinite(min) ? { min, max } : null;
+  }
+  function relativeExtent(minorIndex){
+    let min = Infinity, max = -Infinity;
+    for (let s=0; s<6; s++){
+      for (const off of MINOR_BOXES[minorIndex].frets[s] || []){
+        min = Math.min(min, off);
+        max = Math.max(max, off);
+      }
+    }
+    return { min, max };
   }
 
   function midiToFreq(midi){
@@ -571,7 +906,9 @@
   const stringsLayer = document.getElementById('strings');
   const markersLayer = document.getElementById('markers');
   const labelsLayer  = document.getElementById('labels');
+  const bandsLayer   = document.getElementById('bands');
   const guidesLayer  = document.getElementById('guides');
+  const pulloffsLayer = document.getElementById('pulloffs');
   const notesLayer   = document.getElementById('notes');
 
   function layoutBoard(){
@@ -608,15 +945,17 @@
     fretsLayer.classList.add('frets');
 
     for(let r=0;r<6;r++){
+      const sIdx = visualRowToStringIndex(r);
       const st = document.createElement('div');
       st.className = 'string';
       st.style.top = `${yRow(r)}px`;
+      st.dataset.string = String(sIdx);
       stringsLayer.appendChild(st);
 
       const lbl = document.createElement('div');
       lbl.className = 'slabel';
       lbl.style.top = `${yRow(r)}px`;
-      const sIdx = visualRowToStringIndex(r);
+      lbl.dataset.string = String(sIdx);
       lbl.textContent = toNote(TUNING[sIdx]); // E A D G B E
       labelsLayer.appendChild(lbl);
     }
@@ -691,7 +1030,167 @@
     updateCircleHighlight();
     renderLegend();
     renderGuides();
+    renderBoxBands();
+    renderBoxGallery();
+    updateChainCaption();
     renderNotes();
+    renderOverlays();
+  }
+
+  function renderBoxBands(){
+    if (!bandsLayer) return;
+    bandsLayer.innerHTML = '';
+    if (!state.boxMode || !fb._xFret) return;
+    const x = fb._xFret;
+    chainItems().forEach((item, i) => {
+      const span = boxFretSpan(item.minorIndex, item.octave);
+      if (!span) return;
+      const left = span.min === 0 ? x(0) : (x(span.min - 1) + x(span.min)) / 2;
+      const right = span.max >= state.frets - 1
+        ? x(span.max)
+        : (x(span.max) + x(span.max + 1)) / 2;
+      const band = document.createElement('div');
+      band.className = `box-band b${item.displayId}`;
+      if (itemIsPulsing(item)) band.classList.add('pulse-added');
+      band.style.left = `${left}px`;
+      band.style.width = `${Math.max(18, right - left)}px`;
+      band.style.opacity = i === 0 ? '0.22' : '0.14';
+      bandsLayer.appendChild(band);
+    });
+  }
+
+  function renderMiniSvg(minorIndex){
+    const ns = 'http://www.w3.org/2000/svg';
+    const svgEl = document.createElementNS(ns, 'svg');
+    svgEl.setAttribute('class', 'box-mini');
+    svgEl.setAttribute('viewBox', '0 0 100 78');
+    svgEl.setAttribute('aria-hidden', 'true');
+    const { min, max } = relativeExtent(minorIndex);
+    const cols = Math.max(1, max - min);
+    const left = 10, right = 90, top = 8, bottom = 70;
+    const xAt = (off) => left + ((off - min) / cols) * (right - left);
+    const yAt = (sIdx) => {
+      const row = state.highEOnTop ? (5 - sIdx) : sIdx;
+      return top + (row / 5) * (bottom - top);
+    };
+    const offs = SCALE_OFFSETS[state.mode];
+    const base = boxBaseFret();
+    for (let s = 0; s < 6; s++){
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', String(left));
+      line.setAttribute('x2', String(right));
+      line.setAttribute('y1', String(yAt(s)));
+      line.setAttribute('y2', String(yAt(s)));
+      line.setAttribute('stroke', '#2a2f57');
+      line.setAttribute('stroke-width', '1.2');
+      svgEl.appendChild(line);
+    }
+    for (let s = 0; s < 6; s++){
+      for (const off of MINOR_BOXES[minorIndex].frets[s] || []){
+        const pc = mod(TUNING[s] + base + off, 12);
+        const rel = mod(pc - state.root, 12);
+        const di = offs.indexOf(rel);
+        const dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('cx', String(xAt(off)));
+        dot.setAttribute('cy', String(yAt(s)));
+        dot.setAttribute('r', di === 0 ? '5.2' : '4.4');
+        const fills = ['var(--root)','var(--deg1)','var(--deg2)','var(--deg3)','var(--deg4)'];
+        dot.setAttribute('fill', di >= 0 ? fills[di] : '#6ea8fe');
+        svgEl.appendChild(dot);
+      }
+    }
+    return svgEl;
+  }
+
+  function renderBoxGallery(){
+    const gallery = document.getElementById('boxGallery');
+    if (!gallery) return;
+    gallery.innerHTML = '';
+    const chainIds = new Set(chainItems().map(it => it.displayId));
+    for (let id = 1; id <= 5; id++){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'box-card';
+      if (id === state.boxStart) btn.classList.add('active');
+      else if (chainIds.has(id)) btn.classList.add('in-chain');
+      if (state.pulseItems.some(p => p.displayId === id)) btn.classList.add('pulse-added');
+      btn.style.borderTop = `3px solid ${BOX_COLORS[id - 1]}`;
+      const head = document.createElement('div');
+      head.className = 'box-card-head';
+      head.innerHTML = `<strong>Pattern ${id}</strong><span>${BOX_CAGED[id - 1]} shape</span>`;
+      btn.appendChild(head);
+      btn.appendChild(renderMiniSvg(minorBoxIndex(id)));
+      const spanEl = document.createElement('div');
+      spanEl.className = 'box-card-span';
+      const span = boxFretSpan(minorBoxIndex(id), 0);
+      spanEl.textContent = span ? `Frets ${span.min}–${span.max}` : 'Off the board';
+      btn.appendChild(spanEl);
+      btn.setAttribute('aria-pressed', id === state.boxStart ? 'true' : 'false');
+      btn.addEventListener('click', () => {
+        state.boxStart = id;
+        state.boxMode = true;
+        const chk = document.getElementById('chkBoxes');
+        if (chk) chk.checked = true;
+        stopAddedPatternPulse();
+        renderAll();
+      });
+      gallery.appendChild(btn);
+    }
+  }
+
+  function updateChainCaption(){
+    const el = document.getElementById('chainCaption');
+    if (!el) return;
+    const parts = chainItems().map((item, i) => {
+      const span = boxFretSpan(item.minorIndex, item.octave);
+      const range = span ? `frets ${span.min}–${span.max}` : 'off the board';
+      const label = i === 0 ? 'Start' : (i === 1 ? 'Next' : `Then`);
+      return `${label}: Pattern ${item.displayId} (${BOX_CAGED[item.displayId - 1]} shape) at ${range}`;
+    });
+    const modeLabel = state.mode === 'majorPent' ? 'Major' : 'Minor';
+    el.textContent = `${toNote(state.root)} ${modeLabel} pentatonic. ${parts.join(' • ')}. Dashed rings mark notes that belong to both boxes (the join).`;
+  }
+
+  function renderOverlays(){
+    if (pulloffsLayer) pulloffsLayer.innerHTML = '';
+    if (!state.showPulloffs || !pulloffsLayer || !fb._xFret) return;
+
+    const scale = intervalSet(state.root, SCALE_OFFSETS[state.mode]);
+    const x = fb._xFret, y = fb._yRow;
+    const patternFrets = Array.from({ length: 6 }, () => []);
+    for (let s = 0; s < 6; s++){
+      for (let f = 0; f < state.frets; f++){
+        const pc = mod(TUNING[s] + f, 12);
+        if (!scale.has(pc)) continue;
+        const inBox = !state.boxMode || noteBoxIds(s, f).length > 0;
+        if (inBox) patternFrets[s].push(f);
+      }
+      patternFrets[s].sort((a,b)=>a-b);
+    }
+    for (let r = 0; r < 6; r++){
+      const sIdx = visualRowToStringIndex(r);
+      const frets = patternFrets[sIdx];
+      for (let i = 0; i < frets.length - 1; i++){
+        const a = frets[i], b = frets[i+1];
+        // Whole-step only: one unused (middle) fret between the two pentatonic notes.
+        // Skip minor-third pairs (two frets in between), e.g. open E 3 → 0.
+        if (b - a !== 2) continue;
+        const x1 = x(a), x2 = x(b);
+        const link = document.createElement('div');
+        link.className = 'po-link';
+        link.style.left = `${Math.min(x1,x2)}px`;
+        link.style.width = `${Math.max(12, Math.abs(x2-x1))}px`;
+        link.style.top = `${y(r)}px`;
+        pulloffsLayer.appendChild(link);
+        const tag = document.createElement('div');
+        tag.className = 'po-label';
+        tag.textContent = 'PO';
+        tag.title = `Pull-off ${toNote(TUNING[sIdx]+b)} → ${toNote(TUNING[sIdx]+a)}`;
+        tag.style.left = `${(x1+x2)/2}px`;
+        tag.style.top = `${y(r)}px`;
+        pulloffsLayer.appendChild(tag);
+      }
+    }
   }
 
   function renderNotes(){
@@ -766,7 +1265,10 @@
             cls = DEGREE_CLASS[di];
             isRoot = (cls === 'root');
             if(state.patternOn){
-              if(useDiscrete){
+              if(state.boxMode){
+                const boxIds = noteBoxIds(sIdx, f);
+                inPattern = boxIds.length > 0;
+              }else if(useDiscrete){
                 inPattern = (patternFretsByString[sIdx]||[]).includes(f);
               }else if(windowStart!=null){
                 inPattern = (f>=windowStart && f<=windowEnd);
@@ -788,6 +1290,15 @@
           if(state.patternOn){
             if(inPattern){
               div.classList.add('pattern');
+              if (state.boxMode){
+                const boxIds = noteBoxIds(sIdx, f);
+                const startId = state.boxStart;
+                const inStart = boxIds.includes(startId);
+                const inLater = boxIds.some(id => id !== startId);
+                if (inStart && inLater) div.classList.add('box-link');
+                else if (!inStart && inLater) div.classList.add('in-next');
+                if (noteInPulse(sIdx, f)) div.classList.add('pulse-added');
+              }
             }else if(isRoot){
               div.classList.add('root-hint');
             }else if(!state.patternOnly){
@@ -801,9 +1312,9 @@
           div.setAttribute('data-fret', String(f));
           div.setAttribute('role', 'button');
           div.setAttribute('tabindex', '0');
-          div.setAttribute('aria-label', `Play ${toNote(idx)} on string ${6 - sIdx}, fret ${f}`);
 
           const noteName = toNote(idx);
+          div.setAttribute('aria-label', `Play ${noteName} on string ${6 - sIdx}, fret ${f}`);
           if(state.showDegrees){
             const degTxt = labels[di];
             div.innerHTML = `<span>${noteName}</span><span class="sub">${degTxt}</span>`;
@@ -862,6 +1373,9 @@
   document.getElementById('chkPattern').addEventListener('change', e=>{
     state.patternOn = e.target.checked; renderAll();
   });
+  document.getElementById('chkBoxes').addEventListener('change', e=>{
+    state.boxMode = e.target.checked; renderAll();
+  });
   document.getElementById('chkPatternOnly').addEventListener('change', e=>{
     state.patternOnly = e.target.checked; renderAll();
   });
@@ -873,6 +1387,77 @@
   });
   document.getElementById('presetSelect').addEventListener('change', e=>{
     state.preset = e.target.value; renderAll();
+  });
+
+  document.getElementById('chkPulloff').addEventListener('change', e=>{
+    state.showPulloffs = e.target.checked; renderAll();
+  });
+
+  function syncModeButtons(){
+    const isMajor = state.mode === 'majorPent';
+    document.getElementById('btnMajor').classList.toggle('active', isMajor);
+    document.getElementById('btnMajor').setAttribute('aria-pressed', isMajor ? 'true' : 'false');
+    document.getElementById('btnMinor').classList.toggle('active', !isMajor);
+    document.getElementById('btnMinor').setAttribute('aria-pressed', isMajor ? 'false' : 'true');
+  }
+  function syncChainButtons(){
+    [1,2,3,4,5].forEach(n => {
+      const btn = document.getElementById(`btnChain${n}`);
+      if (!btn) return;
+      btn.classList.toggle('active', state.boxChain === n);
+      btn.setAttribute('aria-pressed', state.boxChain === n ? 'true' : 'false');
+    });
+  }
+  function setBoxChain(n){
+    const prevKeys = new Set(chainItems().map(chainItemKey));
+    const grew = n > state.boxChain;
+    state.boxChain = n;
+    state.boxMode = true;
+    const chk = document.getElementById('chkBoxes');
+    if (chk) chk.checked = true;
+    syncChainButtons();
+    if (grew){
+      const added = chainItems().filter(it => !prevKeys.has(chainItemKey(it)));
+      startAddedPatternPulse(added);
+    } else {
+      stopAddedPatternPulse();
+      renderAll();
+    }
+  }
+  document.getElementById('btnChain1').addEventListener('click', ()=>setBoxChain(1));
+  document.getElementById('btnChain2').addEventListener('click', ()=>setBoxChain(2));
+  document.getElementById('btnChain3').addEventListener('click', ()=>setBoxChain(3));
+  document.getElementById('btnChain4').addEventListener('click', ()=>setBoxChain(4));
+  document.getElementById('btnChain5').addEventListener('click', ()=>setBoxChain(5));
+  document.getElementById('btnChainPrev').addEventListener('click', ()=>{
+    state.boxStart = state.boxStart === 1 ? 5 : state.boxStart - 1;
+    state.boxMode = true;
+    const chk = document.getElementById('chkBoxes');
+    if (chk) chk.checked = true;
+    stopAddedPatternPulse();
+    renderAll();
+  });
+  document.getElementById('btnChainNext').addEventListener('click', ()=>{
+    state.boxStart = state.boxStart === 5 ? 1 : state.boxStart + 1;
+    state.boxMode = true;
+    const chk = document.getElementById('chkBoxes');
+    if (chk) chk.checked = true;
+    stopAddedPatternPulse();
+    renderAll();
+  });
+  document.getElementById('btnExampleOpen').addEventListener('click', ()=>{
+    state.root = 4; // E
+    state.mode = 'minorPent';
+    state.boxMode = true;
+    state.boxStart = 1;
+    state.boxChain = 2;
+    state.patternOn = true;
+    document.getElementById('chkBoxes').checked = true;
+    document.getElementById('chkPattern').checked = true;
+    syncModeButtons();
+    syncChainButtons();
+    stopAddedPatternPulse();
+    renderAll();
   });
 
   const iosHelpModal = document.getElementById('iosHelpModal');
