@@ -66,8 +66,14 @@
   select{
     background:#0d1024; color:var(--text); border:1px solid #2a2f57; border-radius:10px; padding:8px 10px
   }
-  .grid{display:grid; grid-template-columns: 420px 1fr; gap:16px; margin-top:16px}
-  @media (max-width:1000px){ .grid{grid-template-columns:1fr} }
+  .layout{display:grid; grid-template-columns: 420px 1fr; gap:16px; margin-top:16px}
+  .boxes-panel{grid-column:1 / -1}
+  .circle-panel{grid-column:1}
+  .fretboard-panel{grid-column:2}
+  @media (max-width:1000px){
+    .layout{grid-template-columns:1fr}
+    .boxes-panel, .circle-panel, .fretboard-panel{grid-column:1}
+  }
   .card{
     background:linear-gradient(180deg,var(--panel),var(--panel-2));
     border:1px solid #2a2f57; border-radius:16px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.25)
@@ -364,12 +370,25 @@
   .modal-primary:hover,.modal-primary:focus-visible{ filter:brightness(1.06); outline:none; }
   .modal-primary:focus-visible{ box-shadow:0 0 0 2px rgba(110,168,254,.5); }
 
-  .boxes-panel{ margin-top:16px; }
-  .boxes-head{
-    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:8px;
+  .fb-head{
+    display:flex; align-items:center; justify-content:flex-start; gap:10px; flex-wrap:wrap; margin-bottom:8px;
   }
-  .boxes-head h2{ margin:0; }
-  .draft-pill{ color:var(--accent); }
+  .fb-head h2{ margin:0; }
+  .fb-head-note{ font-weight:600; letter-spacing:.04em; text-transform:none; color:var(--muted); opacity:.85; }
+  .fb-pattern-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .fb-pattern-bar .seg button{
+    min-width:36px; padding:6px 10px; font-size:13px;
+  }
+  .fb-caged button[data-box="1"]{ box-shadow:inset 0 3px 0 var(--box1); }
+  .fb-caged button[data-box="2"]{ box-shadow:inset 0 3px 0 var(--box2); }
+  .fb-caged button[data-box="3"]{ box-shadow:inset 0 3px 0 var(--box3); }
+  .fb-caged button[data-box="4"]{ box-shadow:inset 0 3px 0 var(--box4); }
+  .fb-caged button[data-box="5"]{ box-shadow:inset 0 3px 0 var(--box5); }
+  .fb-caged button.active[data-box="1"]{ box-shadow:inset 0 3px 0 #0d1024; }
+  .fb-caged button.active[data-box="2"]{ box-shadow:inset 0 3px 0 #0d1024; }
+  .fb-caged button.active[data-box="3"]{ box-shadow:inset 0 3px 0 #0d1024; }
+  .fb-caged button.active[data-box="4"]{ box-shadow:inset 0 3px 0 #0d1024; }
+  .fb-caged button.active[data-box="5"]{ box-shadow:inset 0 3px 0 #0d1024; }
   .box-gallery{
     display:grid; grid-template-columns:repeat(5, minmax(120px, 1fr)); gap:10px; margin:12px 0;
   }
@@ -411,6 +430,21 @@
   }
   #chainCaption{ margin:0; }
   .overlay-legend .dot.po{ background:var(--po); }
+
+  /* iPhone landscape: key circle first, compact fretboard pattern controls */
+  @media (orientation: landscape) and (max-height: 520px){
+    .circle-panel{ order:-1; }
+    .fb-head h2{ font-size:11px; letter-spacing:.12em; }
+    .fb-head-note{ display:none; }
+    .fb-tap-hint, .fb-caged-hint{ display:none; }
+    .fb-pattern-bar .seg button{ min-width:32px; padding:5px 8px; font-size:12px; }
+    #circle{ width:min(240px, 58vh); height:min(240px, 58vh); }
+    .circle-wrap{ padding:0; }
+    .circle-panel > .legend{ margin-bottom:4px !important; }
+    header{ padding:8px 10px; gap:10px; }
+    .title h1{ font-size:14px; }
+    .card{ padding:8px 10px; }
+  }
 </style>
 </head>
 <body>
@@ -455,11 +489,9 @@
       </div>
     </header>
 
+    <div class="layout">
     <section class="card boxes-panel" id="boxesPanel">
-      <div class="boxes-head">
-        <h2>Five patterns (CAGED)</h2>
-        <div class="pill draft-pill">Draft — linked boxes</div>
-      </div>
+      <h2>Five patterns (CAGED)</h2>
       <p class="legend" style="margin:0 0 4px">
         Each key uses five connected boxes. Pattern 1 is the home box (tonic on the low E).
         Click a box to start there, then add the next pattern(s) up the neck.
@@ -484,8 +516,7 @@
       <p class="pill" id="chainCaption">Pick a starting pattern.</p>
     </section>
 
-    <div class="grid">
-      <section class="card">
+      <section class="card circle-panel">
         <h2>Circle (click a key)</h2>
         <p class="legend" style="margin:0 0 8px">Tap a key to hear that note on the low E string (standard tuning).</p>
         <div class="circle-wrap">
@@ -494,9 +525,27 @@
         <div class="legend" id="degLegend"></div>
       </section>
 
-      <section class="card">
-        <h2>Fretboard (Strings labelled at the nut)</h2>
-        <p class="legend" style="margin:0 0 8px">Tap a labelled note or any empty fret to hear that string and fret.</p>
+      <section class="card fretboard-panel">
+        <div class="fb-head">
+          <h2>Fretboard <span class="fb-head-note">(Strings labelled at the nut)</span></h2>
+          <div class="fb-pattern-bar">
+            <div class="seg fb-caged" role="tablist" aria-label="CAGED pattern">
+              <button type="button" class="fb-caged-btn" data-box="1" aria-pressed="false" title="E shape — this pattern">E</button>
+              <button type="button" class="fb-caged-btn" data-box="2" aria-pressed="false" title="D shape">D</button>
+              <button type="button" class="fb-caged-btn" data-box="3" aria-pressed="false" title="C shape">C</button>
+              <button type="button" class="fb-caged-btn" data-box="4" aria-pressed="false" title="A shape">A</button>
+              <button type="button" class="fb-caged-btn" data-box="5" aria-pressed="false" title="G shape">G</button>
+            </div>
+            <div class="seg fb-chain" role="tablist" aria-label="How many patterns to show on the fretboard">
+              <button type="button" class="fb-chain-btn" data-chain="1" aria-pressed="false" title="This pattern only">This</button>
+              <button type="button" class="fb-chain-btn" data-chain="2" aria-pressed="true" title="This pattern plus the next">Next</button>
+              <button type="button" class="fb-chain-btn" data-chain="3" aria-pressed="false" title="Three in a row">3</button>
+              <button type="button" class="fb-chain-btn" data-chain="4" aria-pressed="false" title="Four in a row">4</button>
+              <button type="button" class="fb-chain-btn" data-chain="5" aria-pressed="false" title="Five in a row">5</button>
+            </div>
+          </div>
+        </div>
+        <p class="legend fb-tap-hint" style="margin:0 0 8px">Tap a labelled note or any empty fret to hear that string and fret.</p>
         <div class="fretboard">
           <div class="board">
             <div class="fb" id="fb">
@@ -514,7 +563,7 @@
         <div class="legend overlay-legend">
           <span class="badge"><span class="dot po"></span>Pull-off pair</span>
         </div>
-        <div class="legend">
+        <div class="legend fb-caged-hint">
           Five CAGED boxes: pick a starting pattern, then show the next one along the neck. Shared notes are the link.
           Turn on pull-off pairs to see whole-step neighbours on a string (one middle fret between them — not the 3-fret stretch).
         </div>

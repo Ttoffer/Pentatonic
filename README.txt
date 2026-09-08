@@ -6,8 +6,21 @@ from a circle of fifths, see the notes on a six-string fretboard, and work with
 the five CAGED boxes so you can start in one position and walk to the next
 related pattern up the neck.
 
-Live site (when GitHub Pages is on):
-  https://ttoffer.github.io/Pentatonic/
+Safari download (iPhone / iPad Home Screen app)
+----------------------------------------------
+This is the link to open in Safari and add to your Home Screen:
+
+  https://Ttoffer.github.io/Pentatonic/
+
+1. On your iPhone or iPad, open Safari (not Chrome).
+2. Go to https://Ttoffer.github.io/Pentatonic/
+3. Tap Share (the square with an arrow pointing up).
+4. Tap Add to Home Screen.
+5. Name it if you like (for example Pentatonic), then tap Add.
+
+That puts an icon on the Home Screen that opens like an app, without Safari’s
+address bar. Repeat on each device. If an update looks old, delete the shortcut
+and add it again from Safari.
 
 It is a single static page. There is no server, no account, and no tracking.
 Open index.html in a browser, or use any static host. Sound needs a tap first
@@ -166,12 +179,12 @@ plus 21).
 7. iPhone and iPad
 ------------------
 
-Use Safari (not Chrome) to add an icon to the Home Screen.
+Safari download / Home Screen icon — use this link in Safari:
 
-1. Open Safari and go to https://ttoffer.github.io/Pentatonic/
-2. Tap Share (square with an arrow)
-3. Tap Add to Home Screen
-4. Name it if you like, then Add
+  https://Ttoffer.github.io/Pentatonic/
+
+Full steps are at the top of this file under “Safari download”.
+Use Safari (not Chrome). Tap Share, then Add to Home Screen.
 
 You get a full-screen icon without the address bar. Repeat on each device.
 If an update looks stale, delete the old shortcut and add it again.
